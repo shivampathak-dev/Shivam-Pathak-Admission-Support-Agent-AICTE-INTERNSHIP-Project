@@ -332,8 +332,8 @@ For PPT-ready static diagrams, see `Shivam_CollegeAdmissionAgent_Presentation.pp
 ## 👨‍💻 Author
 
 **Shivam Pathak**  
-AICTE / IBM SkillsBuild Internship — Cohort 2025  
-shivampathak1020@gmail.com
+AICTE / IBM SkillsBuild Internship — Cohort 2026 
+pathakshivam272006@gmail.com
 
 ---
 
