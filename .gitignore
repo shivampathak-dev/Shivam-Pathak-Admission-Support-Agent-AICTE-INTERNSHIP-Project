@@ -94,3 +94,8 @@ htmlcov/
 # ---- Large binary / personal files (not part of project) ----
 jdk-*.dmg
 *.pcapng
+
+# ---- Large presentation (>100 MB — exceeds GitHub limit) ----
+# Upload manually to GitHub Releases or use Git LFS
+Shivam_CollegeAdmissionAgent_Presentation.pptx
+~$Shivam_CollegeAdmissionAgent_Presentation.pptx
