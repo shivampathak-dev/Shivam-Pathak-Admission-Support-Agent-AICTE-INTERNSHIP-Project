@@ -1,6 +1,48 @@
 """
-FastAPI application entry point.
-Run the whole project with:  python3 app/main.py
+FastAPI application entry point — College Admission Support Agent
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HOW TO RUN THE PROJECT
+──────────────────────
+OPTION 1 — One-command launcher (starts backend + frontend together):
+    cd backend
+    python3 app/main.py
+
+OPTION 2 — Run backend and frontend separately:
+
+  Backend (FastAPI):
+    cd backend
+    uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  Frontend (Next.js dev):
+    cd frontend
+    npm run dev
+
+  Frontend (Next.js production):
+    cd frontend
+    npm run build
+    npm run start
+
+OPTION 3 — Docker Compose (both services):
+    docker-compose up --build
+
+PREREQUISITES
+─────────────
+  • Python ≥ 3.10    → pip install -r backend/requirements.txt
+  • Node.js ≥ 18     → cd frontend && npm install
+  • IBM watsonx creds → cp backend/.env.example backend/.env
+                        then fill IBM_WATSONX_API_KEY + IBM_WATSONX_PROJECT_ID
+
+FIRST-TIME SETUP (run once after install):
+    cd backend
+    python seed_admin.py           # creates admin@college.edu / Admin1234
+    python ingest_knowledge_base.py  # indexes pre-loaded college docs
+
+URLs AFTER START
+────────────────
+  Frontend  : http://localhost:3000
+  API docs  : http://localhost:8000/api/docs
+  Health    : http://localhost:8000/api/health
 """
 import logging
 import os

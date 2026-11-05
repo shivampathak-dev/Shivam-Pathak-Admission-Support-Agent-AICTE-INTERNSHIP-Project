@@ -97,57 +97,102 @@ college-admission-agent/
 
 ### Prerequisites
 
-- **Node.js** ≥ 18  
-- **Python** ≥ 3.10 (tested on 3.13)  
+- **Node.js** ≥ 18
+- **Python** ≥ 3.10 (tested on 3.13)
 - **Git**
 
 ### 1. Clone & enter project
 
 ```bash
-git clone <your-repo-url>
-cd college-admission-agent
+git clone https://github.com/shivampathak-dev/Shivam-Pathak-Admission-Support-Agent-AICTE-INTERNSHIP-Project.git
+cd Shivam-Pathak-Admission-Support-Agent-AICTE-INTERNSHIP-Project/college-admission-agent
 ```
 
-### 2. Backend setup
+### 2. Install dependencies
+
+```bash
+# Python (backend)
+pip install -r backend/requirements.txt
+
+# Node.js (frontend)
+cd frontend && npm install && cd ..
+```
+
+### 3. Configure environment
+
+```bash
+cp backend/.env.example backend/.env
+# Open backend/.env and set:
+#   IBM_WATSONX_API_KEY=<your key>
+#   IBM_WATSONX_PROJECT_ID=<your project id>
+# (Leave blank to use built-in mock RAG fallback for local testing)
+```
+
+### 4. First-time setup (run once)
 
 ```bash
 cd backend
 
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Copy env file and configure
-cp .env.example .env
-# → Open .env and set IBM_WATSONX_API_KEY + IBM_WATSONX_PROJECT_ID
-#   (leave empty to use built-in mock RAG fallback for testing)
-
-# Seed the admin user
+# Create admin account  →  admin@college.edu / Admin1234
 python seed_admin.py
 
-# Index the pre-loaded knowledge base
+# Index pre-loaded college knowledge base into ChromaDB
 python ingest_knowledge_base.py
 
-# Start the API server
+cd ..
+```
+
+---
+
+## ▶️ Running the Project
+
+### Option 1 — One-command launcher *(starts backend + frontend together)*
+
+```bash
+cd backend
+python3 app/main.py
+```
+
+- **Frontend** opens automatically at → http://localhost:3000
+- **Backend API** runs at → http://localhost:8000/api/docs
+
+---
+
+### Option 2 — Run backend and frontend separately
+
+**Terminal 1 — Backend:**
+```bash
+cd backend
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Backend API docs: http://localhost:8000/api/docs
-
-### 3. Frontend setup
-
+**Terminal 2 — Frontend (dev):**
 ```bash
 cd frontend
-
-# Install Node dependencies
-npm install
-
-# Start the dev server
 npm run dev
 ```
 
-Open: http://localhost:3000
+**Terminal 2 — Frontend (production build):**
+```bash
+cd frontend
+npm run build
+npm run start
+```
 
-### 4. Login credentials
+---
+
+### Option 3 — Docker Compose *(both services in one command)*
+
+```bash
+docker-compose up --build
+```
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000/api/docs
+
+---
+
+### Login credentials
 
 | Role | Email | Password |
 |------|-------|----------|
