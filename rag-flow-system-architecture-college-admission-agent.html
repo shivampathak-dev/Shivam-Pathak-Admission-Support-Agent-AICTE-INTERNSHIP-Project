@@ -1,0 +1,577 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Architecture Diagrams — College Admission Agent</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    background: #0a0e1a;
+    color: #e2e8f0;
+    padding: 32px 24px 48px;
+  }
+
+  h1.page-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #4a90d9;
+    margin-bottom: 8px;
+  }
+  .page-sub {
+    text-align: center;
+    font-size: 11px;
+    color: #475569;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── Diagram card ── */
+  .diagram-card {
+    background: #0d1526;
+    border: 1px solid #1e2d4a;
+    border-radius: 16px;
+    padding: 32px 28px 28px;
+    margin-bottom: 40px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    overflow: hidden;
+  }
+  .diagram-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(37,99,235,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .diagram-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+  .diagram-subtitle {
+    font-size: 11px;
+    color: #4a90d9;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  /* ── SVG diagrams ── */
+  svg { display: block; width: 100%; height: auto; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #1e2d4a;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #1e2d4a;
+    text-align: center;
+    font-size: 11px;
+    color: #334155;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">College Admission Agent — IBM Granite RAG System</h1>
+<p class="page-sub">Architecture Diagrams · AICTE / IBM SkillsBuild Internship · Shivam Pathak</p>
+
+
+<div class="diagram-card">
+  <div class="diagram-title">Diagram 1 — RAG Pipeline Flow</div>
+  <div class="diagram-subtitle">Retrieval-Augmented Generation · Document Ingestion → Query → Answer</div>
+
+  <svg xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      
+      <marker id="arrow">
+        <path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"></path>
+      </marker>
+      <marker id="arrow-g">
+        <path d="M0,0 L0,6 L8,3 z" fill="#10b981"></path>
+      </marker>
+      <marker id="arrow-o">
+        <path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"></path>
+      </marker>
+      <marker id="arrow-p">
+        <path d="M0,0 L0,6 L8,3 z" fill="#8b5cf6"></path>
+      </marker>
+
+      
+      
+      
+    </defs>
+
+    
+    <text x="14" y="68" font-size="9" fill="#1e3a5f" font-weight="700" transform="rotate(-90,14,68)" text-anchor="middle">INGESTION</text>
+    <text x="14" y="280" font-size="9" fill="#14532d" font-weight="700" transform="rotate(-90,14,280)" text-anchor="middle">QUERY</text>
+    <text x="14" y="450" font-size="9" fill="#4c1d95" font-weight="700" transform="rotate(-90,14,450)" text-anchor="middle">RESPONSE</text>
+
+    
+    <rect x="28" y="14" width="808" height="116" rx="10" fill="#0f1e38" stroke="#1e3d70" stroke-width="0.8" opacity="0.6"></rect>
+    <rect x="28" y="144" width="808" height="156" rx="10" fill="#0a1f14" stroke="#14532d" stroke-width="0.8" opacity="0.6"></rect>
+    <rect x="28" y="314" width="808" height="140" rx="10" fill="#180d36" stroke="#4c1d95" stroke-width="0.8" opacity="0.6"></rect>
+
+    
+    <text x="48" y="32" font-size="10" fill="#3b82f6" font-weight="600">DOCUMENT INGESTION PIPELINE</text>
+    <text x="48" y="162" font-size="10" fill="#10b981" font-weight="600">QUERY PROCESSING PIPELINE</text>
+    <text x="48" y="332" font-size="10" fill="#8b5cf6" font-weight="600">RESPONSE GENERATION PIPELINE</text>
+
+    
+    
+    <rect x="48" y="44" width="110" height="68" rx="8" fill="#0d1e3a" stroke="#2563eb" stroke-width="1.5"></rect>
+    <text x="103" y="68" text-anchor="middle" font-size="18" fill="#3b82f6">📄</text>
+    <text x="103" y="85" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="600">PDF Brochures</text>
+    <text x="103" y="98" text-anchor="middle" font-size="8" fill="#475569">Admin Upload</text>
+    <text x="103" y="109" text-anchor="middle" font-size="8" fill="#475569">≤ 50 MB</text>
+
+    
+    <line x1="158" y1="78" x2="188" y2="78" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"></line>
+
+    
+    <rect x="190" y="44" width="110" height="68" rx="8" fill="#0d1e3a" stroke="#2563eb" stroke-width="1.5"></rect>
+    <text x="245" y="68" text-anchor="middle" font-size="18" fill="#60a5fa">🔍</text>
+    <text x="245" y="85" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="600">PyMuPDF Parser</text>
+    <text x="245" y="98" text-anchor="middle" font-size="8" fill="#475569">Text Extraction</text>
+    <text x="245" y="109" text-anchor="middle" font-size="8" fill="#475569">Per-page chunks</text>
+
+    
+    <line x1="300" y1="78" x2="330" y2="78" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"></line>
+
+    
+    <rect x="332" y="44" width="110" height="68" rx="8" fill="#0d1e3a" stroke="#2563eb" stroke-width="1.5"></rect>
+    <text x="387" y="68" text-anchor="middle" font-size="18" fill="#60a5fa">✂️</text>
+    <text x="387" y="85" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="600">Text Chunker</text>
+    <text x="387" y="98" text-anchor="middle" font-size="8" fill="#475569">500 words / chunk</text>
+    <text x="387" y="109" text-anchor="middle" font-size="8" fill="#475569">50-word overlap</text>
+
+    
+    <line x1="442" y1="78" x2="472" y2="78" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"></line>
+
+    
+    <rect x="474" y="44" width="120" height="68" rx="8" fill="#0d1e3a" stroke="#2563eb" stroke-width="1.5"></rect>
+    <text x="534" y="68" text-anchor="middle" font-size="18" fill="#60a5fa">🧠</text>
+    <text x="534" y="85" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="600">Embedding Model</text>
+    <text x="534" y="98" text-anchor="middle" font-size="8" fill="#475569">all-MiniLM-L6-v2</text>
+    <text x="534" y="109" text-anchor="middle" font-size="8" fill="#475569">384-dim vectors</text>
+
+    
+    <line x1="594" y1="78" x2="624" y2="78" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"></line>
+
+    
+    <rect x="626" y="44" width="110" height="68" rx="8" fill="#172040" stroke="#3b82f6" stroke-width="2" filter="url(#glow-b)"></rect>
+    <text x="681" y="68" text-anchor="middle" font-size="18" fill="#93c5fd">🗄️</text>
+    <text x="681" y="85" text-anchor="middle" font-size="9" fill="#bfdbfe" font-weight="700">ChromaDB</text>
+    <text x="681" y="98" text-anchor="middle" font-size="8" fill="#60a5fa">Vector Store</text>
+    <text x="681" y="109" text-anchor="middle" font-size="8" fill="#60a5fa">Cosine Similarity</text>
+
+    
+    
+    <rect x="48" y="174" width="110" height="68" rx="8" fill="#0a1f14" stroke="#10b981" stroke-width="1.5"></rect>
+    <text x="103" y="198" text-anchor="middle" font-size="18" fill="#10b981">👤</text>
+    <text x="103" y="215" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">Student Query</text>
+    <text x="103" y="228" text-anchor="middle" font-size="8" fill="#475569">Text / Voice</text>
+    <text x="103" y="239" text-anchor="middle" font-size="8" fill="#475569">Next.js UI</text>
+
+    
+    <line x1="158" y1="208" x2="188" y2="208" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-g)"></line>
+
+    
+    <rect x="190" y="174" width="110" height="68" rx="8" fill="#0a1f14" stroke="#10b981" stroke-width="1.5"></rect>
+    <text x="245" y="198" text-anchor="middle" font-size="18" fill="#34d399">🔢</text>
+    <text x="245" y="215" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">Query Encoder</text>
+    <text x="245" y="228" text-anchor="middle" font-size="8" fill="#475569">Same MiniLM</text>
+    <text x="245" y="239" text-anchor="middle" font-size="8" fill="#475569">384-dim embed</text>
+
+    
+    <line x1="300" y1="208" x2="330" y2="208" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-g)"></line>
+
+    
+    <rect x="332" y="174" width="120" height="68" rx="8" fill="#0a1f14" stroke="#10b981" stroke-width="1.5"></rect>
+    <text x="392" y="198" text-anchor="middle" font-size="18" fill="#34d399">🎯</text>
+    <text x="392" y="215" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">ANN Retrieval</text>
+    <text x="392" y="228" text-anchor="middle" font-size="8" fill="#475569">Top-5 chunks</text>
+    <text x="392" y="239" text-anchor="middle" font-size="8" fill="#475569">HNSW Index</text>
+
+    
+    <line x1="452" y1="208" x2="668" y2="100" stroke="#10b981" stroke-width="1.2" marker-end="url(#arrow-g)" opacity="0.7"></line>
+    <text x="570" y="158" font-size="8" fill="#10b981" opacity="0.8">vector query</text>
+
+    
+    <line x1="452" y1="208" x2="482" y2="208" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-g)"></line>
+
+    
+    <rect x="484" y="174" width="120" height="68" rx="8" fill="#0a1f14" stroke="#10b981" stroke-width="1.5"></rect>
+    <text x="544" y="198" text-anchor="middle" font-size="18" fill="#34d399">📋</text>
+    <text x="544" y="215" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">Context Builder</text>
+    <text x="544" y="228" text-anchor="middle" font-size="8" fill="#475569">Prompt assembly</text>
+    <text x="544" y="239" text-anchor="middle" font-size="8" fill="#475569">Source metadata</text>
+
+    
+    <line x1="604" y1="208" x2="634" y2="208" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-g)"></line>
+
+    
+    <rect x="636" y="174" width="100" height="68" rx="8" fill="#0a1f14" stroke="#10b981" stroke-width="1.5"></rect>
+    <text x="686" y="198" text-anchor="middle" font-size="18" fill="#34d399">📝</text>
+    <text x="686" y="215" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">RAG Prompt</text>
+    <text x="686" y="228" text-anchor="middle" font-size="8" fill="#475569">System + Context</text>
+    <text x="686" y="239" text-anchor="middle" font-size="8" fill="#475569">+ Question</text>
+
+    
+
+    
+    <line x1="686" y1="242" x2="686" y2="322" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#arrow-p)"></line>
+
+    
+    <rect x="600" y="324" width="170" height="86" rx="10" fill="#1c0d3a" stroke="#8b5cf6" stroke-width="2.5" filter="url(#glow-g)"></rect>
+    
+    <rect x="610" y="332" width="30" height="14" rx="3" fill="#0f62fe"></rect>
+    <text x="625" y="343" text-anchor="middle" font-size="8" fill="white" font-weight="800">IBM</text>
+    <text x="685" y="350" text-anchor="middle" font-size="11" fill="#c4b5fd" font-weight="700">IBM Granite</text>
+    <text x="685" y="364" text-anchor="middle" font-size="9" fill="#a78bfa">granite-3-8b-instruct</text>
+    <text x="685" y="377" text-anchor="middle" font-size="8" fill="#7c3aed">watsonx.ai API</text>
+    <text x="685" y="390" text-anchor="middle" font-size="8" fill="#7c3aed">SSE Streaming</text>
+
+    
+    <rect x="400" y="340" width="140" height="68" rx="8" fill="#1c0d3a" stroke="#8b5cf6" stroke-width="1.5"></rect>
+    <text x="470" y="365" text-anchor="middle" font-size="16" fill="#a78bfa">🛡️</text>
+    <text x="470" y="382" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="600">Guardrail Check</text>
+    <text x="470" y="395" text-anchor="middle" font-size="8" fill="#475569">Fallback if no docs</text>
+    <text x="470" y="406" text-anchor="middle" font-size="8" fill="#475569">Hallucination block</text>
+
+    
+    <line x1="600" y1="367" x2="540" y2="374" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#arrow-p)"></line>
+
+    
+    <rect x="220" y="340" width="140" height="68" rx="8" fill="#1c0d3a" stroke="#8b5cf6" stroke-width="1.5"></rect>
+    <text x="290" y="365" text-anchor="middle" font-size="16" fill="#a78bfa">📎</text>
+    <text x="290" y="382" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="600">Source Citations</text>
+    <text x="290" y="395" text-anchor="middle" font-size="8" fill="#475569">Filename + Page</text>
+    <text x="290" y="406" text-anchor="middle" font-size="8" fill="#475569">Relevance score</text>
+
+    
+    <line x1="400" y1="374" x2="360" y2="374" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#arrow-p)"></line>
+
+    
+    <rect x="48" y="340" width="130" height="68" rx="8" fill="#1c0d3a" stroke="#8b5cf6" stroke-width="2"></rect>
+    <text x="113" y="365" text-anchor="middle" font-size="16" fill="#a78bfa">💬</text>
+    <text x="113" y="382" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="600">Streamed Answer</text>
+    <text x="113" y="395" text-anchor="middle" font-size="8" fill="#475569">Markdown + Tables</text>
+    <text x="113" y="406" text-anchor="middle" font-size="8" fill="#475569">Voice TTS output</text>
+
+    
+    <line x1="220" y1="374" x2="178" y2="374" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#arrow-p)"></line>
+
+    
+    <line x1="113" y1="408" x2="113" y2="448" stroke="#475569" stroke-width="1"></line>
+    <rect x="50" y="450" width="126" height="28" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1"></rect>
+    <text x="113" y="468" text-anchor="middle" font-size="8" fill="#64748b">SQLite · Chat History · JWT Auth</text>
+
+    
+    <circle cx="103" cy="46" r="9" fill="#2563eb"></circle><text x="103" y="50" text-anchor="middle" font-size="9" fill="white" font-weight="700">1</text>
+    <circle cx="245" cy="46" r="9" fill="#2563eb"></circle><text x="245" y="50" text-anchor="middle" font-size="9" fill="white" font-weight="700">2</text>
+    <circle cx="387" cy="46" r="9" fill="#2563eb"></circle><text x="387" y="50" text-anchor="middle" font-size="9" fill="white" font-weight="700">3</text>
+    <circle cx="534" cy="46" r="9" fill="#2563eb"></circle><text x="534" y="50" text-anchor="middle" font-size="9" fill="white" font-weight="700">4</text>
+    <circle cx="681" cy="46" r="9" fill="#1d4ed8"></circle><text x="681" y="50" text-anchor="middle" font-size="9" fill="white" font-weight="700">5</text>
+
+    <circle cx="103" cy="176" r="9" fill="#059669"></circle><text x="103" y="180" text-anchor="middle" font-size="9" fill="white" font-weight="700">6</text>
+    <circle cx="245" cy="176" r="9" fill="#059669"></circle><text x="245" y="180" text-anchor="middle" font-size="9" fill="white" font-weight="700">7</text>
+    <circle cx="392" cy="176" r="9" fill="#059669"></circle><text x="392" y="180" text-anchor="middle" font-size="9" fill="white" font-weight="700">8</text>
+    <circle cx="544" cy="176" r="9" fill="#059669"></circle><text x="544" y="180" text-anchor="middle" font-size="9" fill="white" font-weight="700">9</text>
+    <circle cx="686" cy="176" r="9" fill="#059669"></circle><text x="686" y="180" text-anchor="middle" font-size="9" fill="white" font-weight="700">10</text>
+
+    <circle cx="686" cy="326" r="9" fill="#7c3aed"></circle><text x="686" y="330" text-anchor="middle" font-size="9" fill="white" font-weight="700">11</text>
+    <circle cx="470" cy="342" r="9" fill="#7c3aed"></circle><text x="470" y="346" text-anchor="middle" font-size="9" fill="white" font-weight="700">12</text>
+    <circle cx="290" cy="342" r="9" fill="#7c3aed"></circle><text x="290" y="346" text-anchor="middle" font-size="9" fill="white" font-weight="700">13</text>
+    <circle cx="113" cy="342" r="9" fill="#7c3aed"></circle><text x="113" y="346" text-anchor="middle" font-size="9" fill="white" font-weight="700">14</text>
+
+    
+    <text x="820" y="496" text-anchor="end" font-size="8" fill="#1e293b">GITM · IBM Granite · RAG v1.0</text>
+  </svg>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>Ingestion Pipeline (Steps 1–5)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Query Processing (Steps 6–10)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>Response Generation (Steps 11–14)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6;opacity:0.5"></div>Persistent Vector Store (ChromaDB)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#0f62fe"></div>IBM Granite LLM (watsonx.ai)</div>
+    <div class="legend-item" style="color:#475569">── ── Dashed = async/background call</div>
+  </div>
+</div>
+
+
+
+<div class="diagram-card">
+  <div class="diagram-title">Diagram 2 — Full System Architecture Blueprint</div>
+  <div class="diagram-subtitle">Three-Tier Architecture · Client · API Layer · AI + Data Layer</div>
+
+  <svg xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="a2">
+        <path d="M0,0 L0,6 L8,3 z" fill="#64748b"></path>
+      </marker>
+      <marker id="a2-b">
+        <path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"></path>
+      </marker>
+      <marker id="a2-g">
+        <path d="M0,0 L0,6 L8,3 z" fill="#10b981"></path>
+      </marker>
+      
+      
+    </defs>
+
+    
+    
+    <rect x="14" y="14" width="226" height="552" rx="12" fill="#0c1a2e" stroke="#1e3a5f" stroke-width="1"></rect>
+    <rect x="14" y="14" width="226" height="32" rx="12" fill="#1e3a5f"></rect>
+    <text x="127" y="35" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="700">CLIENT TIER</text>
+
+    
+    <rect x="254" y="14" width="326" height="552" rx="12" fill="#0a1f14" stroke="#14532d" stroke-width="1"></rect>
+    <rect x="254" y="14" width="326" height="32" rx="12" fill="#14532d"></rect>
+    <text x="417" y="35" text-anchor="middle" font-size="10" fill="#6ee7b7" font-weight="700">API / BACKEND TIER</text>
+
+    
+    <rect x="594" y="14" width="232" height="552" rx="12" fill="#180d36" stroke="#4c1d95" stroke-width="1"></rect>
+    <rect x="594" y="14" width="232" height="32" rx="12" fill="#4c1d95"></rect>
+    <text x="710" y="35" text-anchor="middle" font-size="10" fill="#c4b5fd" font-weight="700">AI + DATA TIER</text>
+
+    
+
+    
+    <rect x="28" y="62" width="198" height="52" rx="7" fill="#0f2040" stroke="#2563eb" stroke-width="1.5"></rect>
+    <text x="127" y="83" text-anchor="middle" font-size="10" fill="#93c5fd" font-weight="600">🌐 Browser / PWA</text>
+    <text x="127" y="98" text-anchor="middle" font-size="8" fill="#475569">Chrome · Safari · Mobile</text>
+    <text x="127" y="109" text-anchor="middle" font-size="8" fill="#475569">React 19 hydration</text>
+
+    
+    <rect x="28" y="130" width="90" height="72" rx="7" fill="#0f2040" stroke="#3b82f6" stroke-width="1.2"></rect>
+    <text x="73" y="152" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="600">🔐 Auth</text>
+    <text x="73" y="166" text-anchor="middle" font-size="8" fill="#475569">Login / Signup</text>
+    <text x="73" y="179" text-anchor="middle" font-size="8" fill="#475569">JWT store</text>
+    <text x="73" y="192" text-anchor="middle" font-size="8" fill="#475569">AuthContext</text>
+
+    
+    <rect x="136" y="130" width="90" height="72" rx="7" fill="#0f2040" stroke="#3b82f6" stroke-width="1.2"></rect>
+    <text x="181" y="152" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="600">💬 Chat UI</text>
+    <text x="181" y="166" text-anchor="middle" font-size="8" fill="#475569">Sidebar + Stream</text>
+    <text x="181" y="179" text-anchor="middle" font-size="8" fill="#475569">Markdown render</text>
+    <text x="181" y="192" text-anchor="middle" font-size="8" fill="#475569">Voice I/O</text>
+
+    
+    <rect x="28" y="218" width="90" height="72" rx="7" fill="#0f2040" stroke="#3b82f6" stroke-width="1.2"></rect>
+    <text x="73" y="240" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="600">⚙️ Admin</text>
+    <text x="73" y="254" text-anchor="middle" font-size="8" fill="#475569">PDF Upload</text>
+    <text x="73" y="267" text-anchor="middle" font-size="8" fill="#475569">Reindex docs</text>
+    <text x="73" y="280" text-anchor="middle" font-size="8" fill="#475569">System stats</text>
+
+    
+    <rect x="136" y="218" width="90" height="72" rx="7" fill="#0f2040" stroke="#3b82f6" stroke-width="1.2"></rect>
+    <text x="181" y="240" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="600">▲ Next.js 16</text>
+    <text x="181" y="254" text-anchor="middle" font-size="8" fill="#475569">App Router</text>
+    <text x="181" y="267" text-anchor="middle" font-size="8" fill="#475569">TypeScript</text>
+    <text x="181" y="280" text-anchor="middle" font-size="8" fill="#475569">Tailwind CSS</text>
+
+    
+    <rect x="28" y="306" width="90" height="60" rx="7" fill="#0f2040" stroke="#6366f1" stroke-width="1"></rect>
+    <text x="73" y="328" text-anchor="middle" font-size="9" fill="#a5b4fc" font-weight="600">🎞 Framer</text>
+    <text x="73" y="341" text-anchor="middle" font-size="8" fill="#475569">Motion</text>
+    <text x="73" y="354" text-anchor="middle" font-size="8" fill="#475569">Animations</text>
+
+    
+    <rect x="136" y="306" width="90" height="60" rx="7" fill="#0f2040" stroke="#6366f1" stroke-width="1"></rect>
+    <text x="181" y="328" text-anchor="middle" font-size="9" fill="#a5b4fc" font-weight="600">🎤 Web Speech</text>
+    <text x="181" y="341" text-anchor="middle" font-size="8" fill="#475569">STT + TTS</text>
+    <text x="181" y="354" text-anchor="middle" font-size="8" fill="#475569">Voice I/O</text>
+
+    
+    <rect x="28" y="382" width="198" height="44" rx="7" fill="#0f2040" stroke="#334155" stroke-width="1"></rect>
+    <text x="127" y="402" text-anchor="middle" font-size="9" fill="#64748b" font-weight="600">Canvas Animations</text>
+    <text x="127" y="416" text-anchor="middle" font-size="8" fill="#334155">Aurora BG · Neural Network Mesh</text>
+
+    
+    <rect x="28" y="440" width="198" height="36" rx="7" fill="#172032" stroke="#1e3a5f" stroke-width="1"></rect>
+    <text x="127" y="459" text-anchor="middle" font-size="9" fill="#475569">RBAC: Student / Admin roles</text>
+    <text x="127" y="471" text-anchor="middle" font-size="8" fill="#334155">Protected routes · Role guards</text>
+
+    
+
+    
+    <rect x="268" y="62" width="298" height="52" rx="7" fill="#0a2a18" stroke="#10b981" stroke-width="2" filter="url(#g2s)"></rect>
+    <text x="417" y="83" text-anchor="middle" font-size="10" fill="#6ee7b7" font-weight="700">⚡ FastAPI (Python 3.13)</text>
+    <text x="417" y="98" text-anchor="middle" font-size="8" fill="#475569">Uvicorn ASGI · GZip · CORS · Lifespan startup</text>
+    <text x="417" y="109" text-anchor="middle" font-size="8" fill="#475569">Port 8000 · OpenAPI docs at /docs</text>
+
+    
+    <rect x="268" y="130" width="88" height="68" rx="7" fill="#0a2a18" stroke="#10b981" stroke-width="1.2"></rect>
+    <text x="312" y="152" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">/auth</text>
+    <text x="312" y="166" text-anchor="middle" font-size="8" fill="#475569">register</text>
+    <text x="312" y="178" text-anchor="middle" font-size="8" fill="#475569">login · /me</text>
+    <text x="312" y="190" text-anchor="middle" font-size="8" fill="#475569">JWT · bcrypt</text>
+
+    
+    <rect x="370" y="130" width="88" height="68" rx="7" fill="#0a2a18" stroke="#10b981" stroke-width="1.2"></rect>
+    <text x="414" y="152" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">/chat</text>
+    <text x="414" y="166" text-anchor="middle" font-size="8" fill="#475569">sessions CRUD</text>
+    <text x="414" y="178" text-anchor="middle" font-size="8" fill="#475569">/query (sync)</text>
+    <text x="414" y="190" text-anchor="middle" font-size="8" fill="#475569">/stream (SSE)</text>
+
+    
+    <rect x="472" y="130" width="88" height="68" rx="7" fill="#0a2a18" stroke="#10b981" stroke-width="1.2"></rect>
+    <text x="516" y="152" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">/admin</text>
+    <text x="516" y="166" text-anchor="middle" font-size="8" fill="#475569">upload PDF</text>
+    <text x="516" y="178" text-anchor="middle" font-size="8" fill="#475569">reindex docs</text>
+    <text x="516" y="190" text-anchor="middle" font-size="8" fill="#475569">stats + health</text>
+
+    
+    <rect x="268" y="214" width="292" height="44" rx="7" fill="#0a2a18" stroke="#065f46" stroke-width="1"></rect>
+    <text x="414" y="234" text-anchor="middle" font-size="9" fill="#34d399" font-weight="600">Security Middleware</text>
+    <text x="414" y="247" text-anchor="middle" font-size="8" fill="#475569">JWT HS256 · Pydantic validation · CORS whitelist · bcrypt hashing</text>
+
+    
+    <rect x="268" y="274" width="292" height="84" rx="7" fill="#0a2a18" stroke="#10b981" stroke-width="2" filter="url(#g2s)"></rect>
+    <text x="414" y="293" text-anchor="middle" font-size="10" fill="#6ee7b7" font-weight="700">RAG Core Engine</text>
+    <text x="414" y="308" text-anchor="middle" font-size="8" fill="#475569">ingestion.py · granite_client.py</text>
+    
+    <rect x="278" y="312" width="118" height="36" rx="5" fill="#0a2a18" stroke="#065f46" stroke-width="1"></rect>
+    <text x="337" y="327" text-anchor="middle" font-size="8" fill="#6ee7b7">PDF → Chunk → Embed</text>
+    <text x="337" y="339" text-anchor="middle" font-size="8" fill="#475569">ingest_knowledge_base.py</text>
+    <rect x="406" y="312" width="144" height="36" rx="5" fill="#0a2a18" stroke="#065f46" stroke-width="1"></rect>
+    <text x="478" y="327" text-anchor="middle" font-size="8" fill="#6ee7b7">Query → Retrieve → Prompt</text>
+    <text x="478" y="339" text-anchor="middle" font-size="8" fill="#475569">retrieve_relevant_chunks()</text>
+
+    
+    <rect x="268" y="374" width="292" height="52" rx="7" fill="#0a2a18" stroke="#065f46" stroke-width="1.2"></rect>
+    <text x="414" y="396" text-anchor="middle" font-size="9" fill="#34d399" font-weight="600">🗃 SQLAlchemy Async ORM</text>
+    <text x="414" y="410" text-anchor="middle" font-size="8" fill="#475569">User · ChatSession · ChatMessage · IndexedDocument</text>
+    <text x="414" y="421" text-anchor="middle" font-size="8" fill="#475569">aiosqlite · AsyncSession · get_db() dependency</text>
+
+    
+    <rect x="268" y="440" width="292" height="36" rx="7" fill="#0a2a18" stroke="#334155" stroke-width="1"></rect>
+    <text x="414" y="459" text-anchor="middle" font-size="9" fill="#475569">BackgroundTasks · Seed Admin · PDF Ingestion Worker</text>
+    <text x="414" y="471" text-anchor="middle" font-size="8" fill="#334155">seed_admin.py · ingest_knowledge_base.py</text>
+
+    
+
+    
+    <rect x="608" y="62" width="204" height="86" rx="9" fill="#1e0a3a" stroke="#7c3aed" stroke-width="2.5" filter="url(#g2)"></rect>
+    <rect x="614" y="68" width="36" height="16" rx="4" fill="#0f62fe"></rect>
+    <text x="632" y="80" text-anchor="middle" font-size="9" fill="white" font-weight="800">IBM</text>
+    <text x="710" y="88" text-anchor="middle" font-size="11" fill="#c4b5fd" font-weight="700">IBM Granite LLM</text>
+    <text x="710" y="103" text-anchor="middle" font-size="9" fill="#a78bfa">granite-3-8b-instruct</text>
+    <text x="710" y="116" text-anchor="middle" font-size="8" fill="#7c3aed">watsonx.ai SDK</text>
+    <text x="710" y="128" text-anchor="middle" font-size="8" fill="#7c3aed">us-south.ml.cloud.ibm.com</text>
+    <text x="710" y="140" text-anchor="middle" font-size="8" fill="#6d28d9">Max tokens: 1024 · Temp: 0.2</text>
+
+    
+    <rect x="608" y="164" width="204" height="74" rx="9" fill="#0d1e38" stroke="#2563eb" stroke-width="2" filter="url(#g2s)"></rect>
+    <text x="710" y="185" text-anchor="middle" font-size="11" fill="#93c5fd" font-weight="700">ChromaDB</text>
+    <text x="710" y="200" text-anchor="middle" font-size="9" fill="#60a5fa">Persistent Vector Store</text>
+    <text x="710" y="214" text-anchor="middle" font-size="8" fill="#475569">HNSW Index · Cosine distance</text>
+    <text x="710" y="226" text-anchor="middle" font-size="8" fill="#475569">Collection: college_docs</text>
+
+    
+    <rect x="608" y="254" width="204" height="64" rx="9" fill="#0d1e38" stroke="#0ea5e9" stroke-width="1.5"></rect>
+    <text x="710" y="272" text-anchor="middle" font-size="10" fill="#7dd3fc" font-weight="700">Embedding Model</text>
+    <text x="710" y="287" text-anchor="middle" font-size="9" fill="#38bdf8">all-MiniLM-L6-v2</text>
+    <text x="710" y="301" text-anchor="middle" font-size="8" fill="#475569">HuggingFace · 384 dims</text>
+    <text x="710" y="312" text-anchor="middle" font-size="8" fill="#475569">sentence-transformers</text>
+
+    
+    <rect x="608" y="334" width="204" height="64" rx="9" fill="#0d1e38" stroke="#0ea5e9" stroke-width="1.5"></rect>
+    <text x="710" y="352" text-anchor="middle" font-size="10" fill="#7dd3fc" font-weight="700">SQLite Database</text>
+    <text x="710" y="367" text-anchor="middle" font-size="9" fill="#38bdf8">admission_agent.db</text>
+    <text x="710" y="381" text-anchor="middle" font-size="8" fill="#475569">Users · Sessions · Messages</text>
+    <text x="710" y="392" text-anchor="middle" font-size="8" fill="#475569">IndexedDocuments</text>
+
+    
+    <rect x="608" y="414" width="204" height="52" rx="9" fill="#0d1e38" stroke="#334155" stroke-width="1"></rect>
+    <text x="710" y="432" text-anchor="middle" font-size="10" fill="#64748b" font-weight="700">File System</text>
+    <text x="710" y="447" text-anchor="middle" font-size="8" fill="#475569">data/uploaded_pdfs/</text>
+    <text x="710" y="459" text-anchor="middle" font-size="8" fill="#475569">data/chroma_db/</text>
+
+    
+
+    
+    <line x1="240" y1="200" x2="262" y2="200" stroke="#3b82f6" stroke-width="2" marker-end="url(#a2-b)"></line>
+    <text x="251" y="196" text-anchor="middle" font-size="7" fill="#3b82f6">HTTP</text>
+    <text x="251" y="208" text-anchor="middle" font-size="7" fill="#3b82f6">SSE</text>
+
+    
+    <line x1="560" y1="105" x2="605" y2="105" stroke="#8b5cf6" stroke-width="2" marker-end="url(#a2)"></line>
+    <text x="582" y="100" text-anchor="middle" font-size="7" fill="#8b5cf6">REST API</text>
+
+    
+    <line x1="560" y1="210" x2="605" y2="210" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#a2-b)"></line>
+    <text x="582" y="205" text-anchor="middle" font-size="7" fill="#3b82f6">vector</text>
+
+    
+    <line x1="560" y1="285" x2="605" y2="285" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#a2)"></line>
+    <text x="582" y="280" text-anchor="middle" font-size="7" fill="#0ea5e9">embed</text>
+
+    
+    <line x1="560" y1="366" x2="605" y2="366" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#a2)"></line>
+    <text x="582" y="361" text-anchor="middle" font-size="7" fill="#0ea5e9">SQL</text>
+
+    
+    <rect x="652" y="534" width="44" height="18" rx="3" fill="#0f62fe" opacity="0.8"></rect>
+    <text x="674" y="547" text-anchor="middle" font-size="9" fill="white" font-weight="800">IBM</text>
+    <text x="722" y="547" font-size="8" fill="#334155">watsonx.ai</text>
+
+    
+    <rect x="28" y="490" width="198" height="22" rx="4" fill="#0a0e1a" stroke="#1e2d4a" stroke-width="1"></rect>
+    <text x="127" y="505" text-anchor="middle" font-size="8" fill="#334155">localhost:3000 → Next.js Frontend</text>
+    <rect x="268" y="490" width="292" height="22" rx="4" fill="#0a0e1a" stroke="#1e2d4a" stroke-width="1"></rect>
+    <text x="414" y="505" text-anchor="middle" font-size="8" fill="#334155">localhost:8000 → FastAPI Backend · /docs → Swagger</text>
+    <rect x="608" y="480" width="204" height="22" rx="4" fill="#0a0e1a" stroke="#1e2d4a" stroke-width="1"></rect>
+    <text x="710" y="495" text-anchor="middle" font-size="8" fill="#334155">us-south.ml.cloud.ibm.com · API Key Auth</text>
+  </svg>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>Client Tier (Next.js 16 + React 19)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>API Tier (FastAPI + Python 3.13)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>AI Tier (IBM Granite + watsonx.ai)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#0ea5e9"></div>Data Tier (ChromaDB + SQLite)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#0f62fe"></div>IBM Cloud Services</div>
+    <div class="legend-item" style="color:#475569">── ── Dashed = vector query path</div>
+  </div>
+</div>
+
+<footer>Made with IBM Bob  ·  College Admission Agent — RAG-Based using IBM Granite  ·  AICTE / IBM SkillsBuild Internship  ·  Shivam Pathak</footer>
+</body>
+</html>

@@ -1,0 +1,51 @@
+# IBM Cloud Code Engine — Deployment Manifest
+# ─────────────────────────────────────────────────────────────────────────────
+# This file documents the ibmcloud CLI commands required to deploy both services
+# to IBM Cloud Code Engine.  Run deploy.sh instead for an automated flow.
+#
+# Prerequisites:
+#   1. IBM Cloud CLI installed  →  https://cloud.ibm.com/docs/cli
+#   2. Code Engine plugin: ibmcloud plugin install code-engine
+#   3. Container Registry plugin: ibmcloud plugin install container-registry
+#   4. Logged in: ibmcloud login --sso
+# ─────────────────────────────────────────────────────────────────────────────
+
+project:
+  name: college-admission-agent
+  region: us-south          # change to eu-de, jp-tok, etc. if needed
+
+registry:
+  namespace: college-admission-agent   # IBM Container Registry namespace
+  region: us.icr.io
+
+services:
+  backend:
+    name: caa-backend
+    image: us.icr.io/college-admission-agent/caa-backend:latest
+    port: 8000
+    cpu: "1"
+    memory: 4G
+    min_scale: 1
+    max_scale: 3
+    env_secrets:
+      - SECRET_KEY
+      - IBM_WATSONX_API_KEY
+      - IBM_WATSONX_PROJECT_ID
+    env_plain:
+      CORS_ORIGINS: "https://caa-frontend.<your-ce-project>.us-south.codeengine.appdomain.cloud"
+      IBM_WATSONX_URL: "https://us-south.ml.cloud.ibm.com"
+      IBM_GRANITE_MODEL_ID: "ibm/granite-3-8b-instruct"
+      DATABASE_URL: "sqlite+aiosqlite:///./data/admission_agent.db"
+      CHROMA_PERSIST_DIR: "data/chroma"
+      EMBEDDING_MODEL_NAME: "all-MiniLM-L6-v2"
+
+  frontend:
+    name: caa-frontend
+    image: us.icr.io/college-admission-agent/caa-frontend:latest
+    port: 3000
+    cpu: "0.5"
+    memory: 1G
+    min_scale: 1
+    max_scale: 3
+    build_args:
+      NEXT_PUBLIC_API_URL: "https://caa-backend.<your-ce-project>.us-south.codeengine.appdomain.cloud"

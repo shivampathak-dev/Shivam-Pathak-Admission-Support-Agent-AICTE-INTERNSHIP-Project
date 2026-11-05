@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAG Pipeline — IBM Granite Admission Agent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d1117;
+      font-family: "IBM Plex Mono", "Fira Code", "Courier New", monospace;
+      overflow: auto;
+      min-height: 100vh;
+      color: #e6edf3;
+    }
+    header {
+      padding: 20px 32px 14px;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .ibm-badge {
+      background: #0f62fe;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: "IBM Plex Sans", sans-serif;
+    }
+    header h1 {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #e6edf3;
+    }
+    header p {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 11px;
+      color: #7d8590;
+      margin-top: 2px;
+    }
+    #canvas-wrap {
+      position: relative;
+      width: 1200px;
+      min-height: 780px;
+      margin: 30px auto 60px;
+    }
+    canvas {
+      position: absolute;
+      top: 0; left: 0;
+      pointer-events: none;
+    }
+    /* ── Node cards ── */
+    .node {
+      position: absolute;
+      width: 190px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      transition: box-shadow 0.2s, transform 0.15s;
+      cursor: default;
+    }
+    .node:hover {
+      box-shadow: 0 6px 32px rgba(15,98,254,0.22), 0 2px 12px rgba(0,0,0,0.5);
+      transform: translateY(-2px);
+    }
+    .node-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-bottom: 1px solid #21262d;
+    }
+    .node-header .icon {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .node-body { padding: 10px 12px 12px; }
+    .node-field {
+      margin-bottom: 7px;
+    }
+    .node-field:last-child { margin-bottom: 0; }
+    .field-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: #7d8590;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .field-value {
+      font-size: 10.5px;
+      color: #c9d1d9;
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 5px;
+      padding: 4px 8px;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .field-value.badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 7px;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+    /* port dots */
+    .port {
+      position: absolute;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 2px solid #0d1117;
+    }
+    .port-out { right: -5px; }
+    .port-in  { left:  -5px; }
+
+    /* colour schemes */
+    .col-blue   { background: #0d2137; }
+    .col-blue   .node-header { background: #0f3058; color: #58a6ff; }
+    .col-blue   .node-header .icon { background: #0f62fe22; }
+    .col-green  { background: #0d2a1c; }
+    .col-green  .node-header { background: #0f3f1e; color: #3fb950; }
+    .col-green  .node-header .icon { background: #3fb95022; }
+    .col-purple { background: #1c0d2e; }
+    .col-purple .node-header { background: #2f0f47; color: #bc8cff; }
+    .col-purple .node-header .icon { background: #bc8cff22; }
+    .col-orange { background: #2a1200; }
+    .col-orange .node-header { background: #3f1c00; color: #f0883e; }
+    .col-orange .node-header .icon { background: #f0883e22; }
+    .col-red    { background: #2a0d0d; }
+    .col-red    .node-header { background: #3f0f0f; color: #f85149; }
+    .col-red    .node-header .icon { background: #f8514922; }
+    .col-cyan   { background: #0a1f2e; }
+    .col-cyan   .node-header { background: #0c3040; color: #39c5cf; }
+    .col-cyan   .node-header .icon { background: #39c5cf22; }
+    .col-gray   { background: #161b22; }
+    .col-gray   .node-header { background: #21262d; color: #8b949e; }
+    .col-gray   .node-header .icon { background: #8b949e22; }
+
+    /* port colours */
+    .p-blue   { background: #58a6ff; }
+    .p-green  { background: #3fb950; }
+    .p-purple { background: #bc8cff; }
+    .p-orange { background: #f0883e; }
+    .p-cyan   { background: #39c5cf; }
+    .p-gray   { background: #8b949e; }
+
+    /* section labels */
+    .section-label {
+      position: absolute;
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #484f58;
+      border-bottom: 1px dashed #21262d;
+      padding-bottom: 4px;
+    }
+
+    footer {
+      text-align: center;
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 11px;
+      color: #484f58;
+      padding: 0 0 32px;
+      border-top: 1px solid #21262d;
+      padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="ibm-badge">IBM</span>
+  <div>
+    <h1>RAG Pipeline — College Admission Agent</h1>
+    <p>IBM Granite + ChromaDB · Visual Architecture · AICTE/IBM SkillsBuild Internship 2025</p>
+  </div>
+</header>
+
+<div id="canvas-wrap">
+  <canvas id="bg" width="1200" height="780"></canvas>
+
+  <!-- ══ INGESTION LANE ══════════════════════════════════════════════════ -->
+  <div class="section-label" style="left:14px;top:18px;width:370px;">📥  Document Ingestion Pipeline</div>
+
+  <!-- Node 1: PDF Upload -->
+  <div class="node col-blue" id="n-upload" style="left:20px;top:50px;">
+    <div class="node-header"><span class="icon">📄</span>PDF Upload</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Source</div><div class="field-value">Drag &amp; Drop / Admin UI</div></div>
+      <div class="node-field"><div class="field-label">Accepts</div><div class="field-value">.pdf (max 20 MB)</div></div>
+      <div class="node-field"><div class="field-label">Storage</div><div class="field-value">data/uploaded_pdfs/</div></div>
+    </div>
+    <div class="port port-out p-blue" style="top:38px;"></div>
+  </div>
+
+  <!-- Node 2: PyMuPDF Parser -->
+  <div class="node col-blue" id="n-parser" style="left:240px;top:50px;">
+    <div class="node-header"><span class="icon">🔍</span>PyMuPDF Parser</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Library</div><div class="field-value">pymupdf (fitz)</div></div>
+      <div class="node-field"><div class="field-label">Output</div><div class="field-value">pages[{page, text}]</div></div>
+      <div class="node-field"><div class="field-label">Filters</div><div class="field-value">min 30 chars/chunk</div></div>
+    </div>
+    <div class="port port-in  p-blue" style="top:38px;"></div>
+    <div class="port port-out p-blue" style="top:38px;"></div>
+  </div>
+
+  <!-- Node 3: Chunker -->
+  <div class="node col-blue" id="n-chunker" style="left:460px;top:50px;">
+    <div class="node-header"><span class="icon">✂️</span>Text Chunker</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Strategy</div><div class="field-value">Word-level sliding window</div></div>
+      <div class="node-field"><div class="field-label">Chunk size</div><div class="field-value">500 tokens</div></div>
+      <div class="node-field"><div class="field-label">Overlap</div><div class="field-value">50 tokens</div></div>
+    </div>
+    <div class="port port-in  p-blue" style="top:38px;"></div>
+    <div class="port port-out p-green" style="top:38px;"></div>
+  </div>
+
+  <!-- Node 4: Embedding Model -->
+  <div class="node col-green" id="n-embed" style="left:680px;top:50px;">
+    <div class="node-header"><span class="icon">🧠</span>Embedding Model</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Model</div><div class="field-value">all-MiniLM-L6-v2</div></div>
+      <div class="node-field"><div class="field-label">Library</div><div class="field-value">sentence-transformers</div></div>
+      <div class="node-field"><div class="field-label">Dims</div><div class="field-value">384-dim float vectors</div></div>
+    </div>
+    <div class="port port-in  p-green" style="top:38px;"></div>
+    <div class="port port-out p-purple" style="top:38px;"></div>
+  </div>
+
+  <!-- Node 5: ChromaDB -->
+  <div class="node col-purple" id="n-chroma" style="left:900px;top:50px;">
+    <div class="node-header"><span class="icon">🗄️</span>ChromaDB</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Storage</div><div class="field-value">data/chroma_db/ (persist)</div></div>
+      <div class="node-field"><div class="field-label">Metric</div><div class="field-value">cosine similarity</div></div>
+      <div class="node-field"><div class="field-label">Collection</div><div class="field-value">college_docs</div></div>
+    </div>
+    <div class="port port-in  p-purple" style="top:38px;"></div>
+    <div class="port port-out p-orange" style="top:38px;"></div>
+  </div>
+
+  <!-- ══ QUERY LANE ═══════════════════════════════════════════════════════ -->
+  <div class="section-label" style="left:14px;top:228px;width:370px;">🔎  Query &amp; Retrieval Pipeline</div>
+
+  <!-- Node 6: Student Query -->
+  <div class="node col-cyan" id="n-query" style="left:20px;top:260px;">
+    <div class="node-header"><span class="icon">👤</span>Student Query</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Channel</div><div class="field-value">Chat UI / SSE Stream</div></div>
+      <div class="node-field"><div class="field-label">Auth</div><div class="field-value">JWT Bearer token</div></div>
+      <div class="node-field"><div class="field-label">Example</div><div class="field-value">"B.Tech CSE fees?"</div></div>
+    </div>
+    <div class="port port-out p-cyan" style="top:38px;"></div>
+  </div>
+
+  <!-- Node 7: Query Embedder -->
+  <div class="node col-green" id="n-qembed" style="left:240px;top:260px;">
+    <div class="node-header"><span class="icon">🔢</span>Query Embedder</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Model</div><div class="field-value">all-MiniLM-L6-v2</div></div>
+      <div class="node-field"><div class="field-label">Same model</div><div class="field-value">as ingestion ✓</div></div>
+      <div class="node-field"><div class="field-label">Output</div><div class="field-value">384-dim query vector</div></div>
+    </div>
+    <div class="port port-in  p-cyan"   style="top:38px;"></div>
+    <div class="port port-out p-purple" style="top:38px;"></div>
+  </div>
+
+  <!-- Node 8: Vector Search -->
+  <div class="node col-purple" id="n-vsearch" style="left:460px;top:260px;">
+    <div class="node-header"><span class="icon">🔎</span>Vector Search</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Method</div><div class="field-value">ChromaDB HNSW</div></div>
+      <div class="node-field"><div class="field-label">Top-K</div><div class="field-value">5 most similar chunks</div></div>
+      <div class="node-field"><div class="field-label">Threshold</div><div class="field-value">score ≥ 0.20</div></div>
+    </div>
+    <div class="port port-in  p-purple" style="top:38px;"></div>
+    <div class="port port-out p-orange" style="top:38px;"></div>
+  </div>
+
+  <!-- Node 9: Prompt Builder -->
+  <div class="node col-orange" id="n-prompt" style="left:680px;top:260px;">
+    <div class="node-header"><span class="icon">📝</span>Prompt Builder</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Template</div><div class="field-value">System + Context + Q</div></div>
+      <div class="node-field"><div class="field-label">Context</div><div class="field-value">[Source, Page]\n{chunk}</div></div>
+      <div class="node-field"><div class="field-label">Guardrail</div><div class="field-value">"Answer only from docs"</div></div>
+    </div>
+    <div class="port port-in  p-orange" style="top:38px;"></div>
+    <div class="port port-out p-cyan"   style="top:38px;"></div>
+  </div>
+
+  <!-- Node 10: IBM Granite -->
+  <div class="node col-cyan" id="n-granite" style="left:900px;top:260px;">
+    <div class="node-header"><span class="icon">💎</span>IBM Granite LLM</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Model</div><div class="field-value">granite-13b-chat-v2</div></div>
+      <div class="node-field"><div class="field-label">Platform</div><div class="field-value">IBM watsonx.ai SDK</div></div>
+      <div class="node-field"><div class="field-label">Fallback</div><div class="field-value">Mock RAG (no API key)</div></div>
+    </div>
+    <div class="port port-in  p-cyan"  style="top:38px;"></div>
+    <div class="port port-out p-green" style="top:38px;"></div>
+  </div>
+
+  <!-- ══ RESPONSE LANE ════════════════════════════════════════════════════ -->
+  <div class="section-label" style="left:14px;top:448px;width:370px;">💬  Response &amp; Delivery Pipeline</div>
+
+  <!-- Node 11: Streamer -->
+  <div class="node col-green" id="n-stream" style="left:900px;top:480px;">
+    <div class="node-header"><span class="icon">📡</span>SSE Streamer</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Protocol</div><div class="field-value">Server-Sent Events</div></div>
+      <div class="node-field"><div class="field-label">Events</div><div class="field-value">sources / token / done</div></div>
+      <div class="node-field"><div class="field-label">Buffering</div><div class="field-value">X-Accel-Buffering: no</div></div>
+    </div>
+    <div class="port port-in  p-green" style="top:38px;"></div>
+    <div class="port port-out p-blue"  style="top:38px;"></div>
+  </div>
+
+  <!-- Node 12: Source Citations -->
+  <div class="node col-orange" id="n-sources" style="left:680px;top:480px;">
+    <div class="node-header"><span class="icon">📖</span>Source Citations</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Format</div><div class="field-value">{filename, page, score}</div></div>
+      <div class="node-field"><div class="field-label">Display</div><div class="field-value">Collapsible chips</div></div>
+      <div class="node-field"><div class="field-label">Top chunks</div><div class="field-value">Up to 3 unique sources</div></div>
+    </div>
+    <div class="port port-in  p-green" style="top:38px;"></div>
+    <div class="port port-out p-blue"  style="top:38px;"></div>
+  </div>
+
+  <!-- Node 13: Markdown Renderer -->
+  <div class="node col-blue" id="n-md" style="left:460px;top:480px;">
+    <div class="node-header"><span class="icon">✨</span>Markdown Renderer</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Library</div><div class="field-value">react-markdown + remark-gfm</div></div>
+      <div class="node-field"><div class="field-label">Supports</div><div class="field-value">Tables / Code / Lists</div></div>
+      <div class="node-field"><div class="field-label">Style</div><div class="field-value">prose-invert Tailwind</div></div>
+    </div>
+    <div class="port port-in  p-blue"  style="top:38px;"></div>
+    <div class="port port-out p-cyan"  style="top:38px;"></div>
+  </div>
+
+  <!-- Node 14: SQLite History -->
+  <div class="node col-gray" id="n-db" style="left:240px;top:480px;">
+    <div class="node-header"><span class="icon">💾</span>SQLite Persistence</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">ORM</div><div class="field-value">SQLAlchemy async</div></div>
+      <div class="node-field"><div class="field-label">Stores</div><div class="field-value">sessions · messages</div></div>
+      <div class="node-field"><div class="field-label">File</div><div class="field-value">admission_agent.db</div></div>
+    </div>
+    <div class="port port-in  p-cyan" style="top:38px;"></div>
+  </div>
+
+  <!-- Node 15: Chat UI -->
+  <div class="node col-cyan" id="n-chatui" style="left:20px;top:480px;">
+    <div class="node-header"><span class="icon">💬</span>Chat UI</div>
+    <div class="node-body">
+      <div class="node-field"><div class="field-label">Framework</div><div class="field-value">Next.js 16 App Router</div></div>
+      <div class="node-field"><div class="field-label">Animations</div><div class="field-value">Framer Motion</div></div>
+      <div class="node-field"><div class="field-label">Voice</div><div class="field-value">STT + TTS (Web Speech)</div></div>
+    </div>
+    <div class="port port-in  p-cyan" style="top:38px;"></div>
+  </div>
+</div>
+
+<footer>
+  <p>College Admission Agent · IBM Granite RAG Pipeline · AICTE/IBM SkillsBuild Internship 2025 · Shivam Pathak</p>
+</footer>
+
+<script>
+(function() {
+  // All connections: [fromNodeId, fromPortSide, toNodeId, toPortSide, color]
+  const edges = [
+    // Ingestion lane (top row left→right)
+    ["n-upload",  "right", "n-parser",  "left",  "#58a6ff"],
+    ["n-parser",  "right", "n-chunker", "left",  "#58a6ff"],
+    ["n-chunker", "right", "n-embed",   "left",  "#3fb950"],
+    ["n-embed",   "right", "n-chroma",  "left",  "#bc8cff"],
+
+    // Query lane (middle row left→right)
+    ["n-query",   "right", "n-qembed",  "left",  "#39c5cf"],
+    ["n-qembed",  "right", "n-vsearch", "left",  "#bc8cff"],
+    ["n-vsearch", "right", "n-prompt",  "left",  "#f0883e"],
+    ["n-prompt",  "right", "n-granite", "left",  "#39c5cf"],
+
+    // Response lane (bottom row right→left)
+    ["n-granite", "bottom","n-stream",  "top",   "#3fb950"],
+    ["n-stream",  "left",  "n-sources", "right", "#3fb950"],
+    ["n-sources", "left",  "n-md",      "right", "#58a6ff"],
+    ["n-md",      "left",  "n-db",      "right", "#39c5cf"],
+    ["n-db",      "left",  "n-chatui",  "right", "#39c5cf"],
+
+    // Cross-lane: ChromaDB feeds vector search
+    ["n-chroma",  "bottom","n-vsearch", "top",   "#bc8cff"],
+    // Cross-lane: sources  → chat ui
+    ["n-sources", "bottom","n-chatui",  "top",   "#f0883e"],
+  ];
+
+  const wrap = document.getElementById("canvas-wrap");
+  const canvas = document.getElementById("bg");
+
+  function getPortXY(nodeId, side) {
+    const node = document.getElementById(nodeId);
+    const wr = wrap.getBoundingClientRect();
+    const nr = node.getBoundingClientRect();
+    const nx = nr.left - wr.left;
+    const ny = nr.top  - wr.top;
+    const nw = nr.width;
+    const nh = nr.height;
+    switch(side) {
+      case "right":  return { x: nx + nw,      y: ny + nh * 0.28 };
+      case "left":   return { x: nx,            y: ny + nh * 0.28 };
+      case "bottom": return { x: nx + nw * 0.5, y: ny + nh       };
+      case "top":    return { x: nx + nw * 0.5, y: ny             };
+    }
+  }
+
+  function drawEdges() {
+    const wr = wrap.getBoundingClientRect();
+    canvas.width  = wrap.offsetWidth;
+    canvas.height = wrap.offsetHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    edges.forEach(([fromId, fromSide, toId, toSide, color]) => {
+      const from = getPortXY(fromId, fromSide);
+      const to   = getPortXY(toId,   toSide);
+
+      // cubic bezier control points
+      let cx1, cy1, cx2, cy2;
+      const dx = Math.abs(to.x - from.x) * 0.5;
+      const dy = Math.abs(to.y - from.y) * 0.5;
+
+      if (fromSide === "right" && toSide === "left") {
+        cx1 = from.x + dx; cy1 = from.y;
+        cx2 = to.x   - dx; cy2 = to.y;
+      } else if (fromSide === "bottom" && toSide === "top") {
+        cx1 = from.x; cy1 = from.y + dy;
+        cx2 = to.x;   cy2 = to.y   - dy;
+      } else if (fromSide === "bottom" && toSide === "left") {
+        cx1 = from.x;       cy1 = from.y + dy;
+        cx2 = to.x - dx;    cy2 = to.y;
+      } else if (fromSide === "left" && toSide === "right") {
+        cx1 = from.x - dx;  cy1 = from.y;
+        cx2 = to.x   + dx;  cy2 = to.y;
+      } else if (fromSide === "bottom" && toSide === "top") {
+        cx1 = from.x; cy1 = from.y + 60;
+        cx2 = to.x;   cy2 = to.y   - 60;
+      } else {
+        cx1 = (from.x + to.x) / 2; cy1 = from.y;
+        cx2 = (from.x + to.x) / 2; cy2 = to.y;
+      }
+
+      // Shadow glow
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur  = 8;
+      ctx.strokeStyle = color + "55";
+      ctx.lineWidth   = 5;
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.bezierCurveTo(cx1, cy1, cx2, cy2, to.x, to.y);
+      ctx.stroke();
+      ctx.restore();
+
+      // Main line
+      ctx.save();
+      ctx.strokeStyle = color + "cc";
+      ctx.lineWidth   = 1.8;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.bezierCurveTo(cx1, cy1, cx2, cy2, to.x, to.y);
+      ctx.stroke();
+      ctx.restore();
+
+      // Arrow head at destination
+      const t = 0.99;
+      const bx = 3*Math.pow(1-t,2)*t*(cx1-from.x) + 3*(1-t)*Math.pow(t,2)*(cx2-cx1) + Math.pow(t,3)*(to.x-cx2);
+      const by = 3*Math.pow(1-t,2)*t*(cy1-from.y) + 3*(1-t)*Math.pow(t,2)*(cy2-cy1) + Math.pow(t,3)*(to.y-cy2);
+      const angle = Math.atan2(to.y - (to.y-by), to.x - (to.x-bx));
+      ctx.save();
+      ctx.translate(to.x, to.y);
+      ctx.rotate(angle);
+      ctx.fillStyle = color + "cc";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-9, -4);
+      ctx.lineTo(-9,  4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  // Re-draw on load and resize
+  window.addEventListener("load",   () => setTimeout(drawEdges, 50));
+  window.addEventListener("resize", drawEdges);
+  setTimeout(drawEdges, 120);
+})();
+</script>
+</body>
+</html>

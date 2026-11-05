@@ -1,0 +1,26 @@
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+pydantic-settings==2.16.2
+pydantic[email]==2.13.5
+
+# Auth
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.32
+
+# DB
+sqlalchemy==2.1.6
+aiosqlite==0.22.1
+
+# RAG
+chromadb==1.5.9
+sentence-transformers==6.2.0
+PyMuPDF==2.1
+
+# IBM watsonx (optional — app works without it in mock mode)
+ibm-watsonx-ai==1.8.1
+
+# Utils
+httpx==0.28.1
+python-dotenv==1.2.3

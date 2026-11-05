@@ -1,0 +1,494 @@
+get <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>RAG Architecture — College Admission Agent</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 297mm;
+    height: 210mm;
+    overflow: hidden;
+    background: #ffffff;
+    font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Page wrapper ── */
+  .page {
+    width: 297mm;
+    height: 210mm;
+    position: relative;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Top header bar ── */
+  .header {
+    background: #0f2b5b;
+    color: #ffffff;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .ibm-pill {
+    background: #0f62fe;
+    color: #fff;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 3px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .header h1 { font-size: 12px; font-weight: 700; letter-spacing: 0.02em; }
+  .header p  { font-size: 8px; color: #a8c4f0; margin-top: 1px; }
+  .header-right { font-size: 7.5px; color: #a8c4f0; text-align: right; line-height: 1.5; }
+
+  /* ── Canvas area ── */
+  .canvas {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #f8faff;
+  }
+
+  /* ── SVG arrows layer ── */
+  .arrows {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  /* ── Lane backgrounds ── */
+  .lane {
+    position: absolute;
+    border-radius: 6px;
+    border: 1px dashed;
+  }
+  .lane-label {
+    position: absolute;
+    font-size: 6.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* ── Node cards ── */
+  .node {
+    position: absolute;
+    border-radius: 7px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    border: 1px solid;
+  }
+  .node-hd {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 7px 3px;
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+  .node-hd .ico {
+    font-size: 9px;
+    line-height: 1;
+  }
+  .node-bd {
+    padding: 4px 7px 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .field { display: flex; flex-direction: column; gap: 1px; }
+  .flbl  { font-size: 5.8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #888; }
+  .fval  { font-size: 7px; color: #1a1a2e; background: rgba(0,0,0,0.04); border-radius: 3px; padding: 1.5px 4px; line-height: 1.35; }
+
+  /* ── Colour themes ── */
+  /* Blue */
+  .t-blue  { border-color: #1d4ed8; background: #eff6ff; }
+  .t-blue  .node-hd { background: #1e3a8a; color: #bfdbfe; }
+  /* Green */
+  .t-green { border-color: #15803d; background: #f0fdf4; }
+  .t-green .node-hd { background: #14532d; color: #bbf7d0; }
+  /* Purple */
+  .t-purple{ border-color: #7c3aed; background: #faf5ff; }
+  .t-purple .node-hd { background: #4c1d95; color: #ddd6fe; }
+  /* Orange */
+  .t-orange{ border-color: #c2410c; background: #fff7ed; }
+  .t-orange .node-hd { background: #7c2d12; color: #fed7aa; }
+  /* Cyan */
+  .t-cyan  { border-color: #0e7490; background: #ecfeff; }
+  .t-cyan  .node-hd { background: #164e63; color: #a5f3fc; }
+  /* Slate */
+  .t-slate { border-color: #475569; background: #f8fafc; }
+  .t-slate .node-hd { background: #1e293b; color: #cbd5e1; }
+  /* IBM Blue accent */
+  .t-ibm   { border-color: #0f62fe; background: #eef4ff; }
+  .t-ibm   .node-hd { background: #0043ce; color: #d0e2ff; }
+
+  /* ── Footer ── */
+  .footer {
+    background: #0f2b5b;
+    color: #7da8d8;
+    font-size: 7px;
+    padding: 4px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  /* ── Step labels on arrows ── */
+  .step-badge {
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    font-size: 6.5px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+
+  @media print {
+    body { width: 297mm; height: 210mm; }
+    .page { width: 297mm; height: 210mm; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+  <div class="header">
+    <div class="header-left">
+      <span class="ibm-pill">IBM</span>
+      <div>
+        <h1>RAG Architecture — College Admission Agent</h1>
+        <p>Retrieval-Augmented Generation Pipeline · IBM Granite + ChromaDB · AICTE/IBM SkillsBuild Internship 2025</p>
+      </div>
+    </div>
+    <div class="header-right">
+      Shivam Pathak &nbsp;|&nbsp; shivampathak1020@gmail.com<br/>
+      Greenfield Institute of Technology &amp; Management (GITM)
+    </div>
+  </div>
+
+  <!-- ══ CANVAS ══════════════════════════════════════════════════════════════ -->
+  <div class="canvas" id="cv">
+
+    <!-- ── Lane backgrounds ─────────────────────────────────────────────── -->
+    <!-- Ingestion lane -->
+    <div class="lane" style="left:8px;top:6px;width:536px;height:70px;border-color:#1d4ed855;background:rgba(219,234,254,0.18);"></div>
+    <div class="lane-label" style="left:13px;top:9px;color:#1d4ed8;">📥 Ingestion Pipeline</div>
+
+    <!-- Query lane -->
+    <div class="lane" style="left:8px;top:83px;width:536px;height:70px;border-color:#7c3aed55;background:rgba(237,233,254,0.18);"></div>
+    <div class="lane-label" style="left:13px;top:86px;color:#7c3aed;">🔎 Query &amp; Retrieval</div>
+
+    <!-- Response lane -->
+    <div class="lane" style="left:8px;top:160px;width:536px;height:70px;border-color:#0e749055;background:rgba(236,254,255,0.18);"></div>
+    <div class="lane-label" style="left:13px;top:163px;color:#0e7490;">💬 Response Delivery</div>
+
+    <!-- IBM Granite column -->
+    <div class="lane" style="left:553px;top:6px;width:136px;height:224px;border-color:#0f62fe55;background:rgba(238,244,255,0.35);"></div>
+    <div class="lane-label" style="left:557px;top:9px;color:#0043ce;">💎 IBM Granite</div>
+
+    <!-- SVG arrows -->
+    <svg class="arrows" id="svg-arrows" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr-blue"   markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#1d4ed8"/></marker>
+        <marker id="arr-purple" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#7c3aed"/></marker>
+        <marker id="arr-green"  markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#15803d"/></marker>
+        <marker id="arr-orange" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#c2410c"/></marker>
+        <marker id="arr-cyan"   markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#0e7490"/></marker>
+        <marker id="arr-ibm"    markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#0f62fe"/></marker>
+        <marker id="arr-slate"  markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#475569"/></marker>
+      </defs>
+    </svg>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         INGESTION LANE  (top, y=20–70)
+         Nodes: Upload → Parser → Chunker → Embedder → ChromaDB
+    ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Node: PDF Upload -->
+    <div class="node t-blue" id="n1" style="left:14px;top:20px;width:96px;">
+      <div class="node-hd"><span class="ico">📄</span>PDF Upload</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Channel</div><div class="fval">Admin Dashboard</div></div>
+        <div class="field"><div class="flbl">Format</div><div class="fval">.pdf — max 20 MB</div></div>
+      </div>
+    </div>
+
+    <!-- Node: PyMuPDF Parser -->
+    <div class="node t-blue" id="n2" style="left:122px;top:20px;width:96px;">
+      <div class="node-hd"><span class="ico">🔍</span>PyMuPDF</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Library</div><div class="fval">pymupdf (fitz v2)</div></div>
+        <div class="field"><div class="flbl">Output</div><div class="fval">{page, text}[]</div></div>
+      </div>
+    </div>
+
+    <!-- Node: Chunker -->
+    <div class="node t-blue" id="n3" style="left:230px;top:20px;width:96px;">
+      <div class="node-hd"><span class="ico">✂️</span>Chunker</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Size / Overlap</div><div class="fval">500 / 50 words</div></div>
+        <div class="field"><div class="flbl">Strategy</div><div class="fval">Sliding window</div></div>
+      </div>
+    </div>
+
+    <!-- Node: Embedding Model -->
+    <div class="node t-green" id="n4" style="left:338px;top:20px;width:100px;">
+      <div class="node-hd"><span class="ico">🧠</span>Embeddings</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Model</div><div class="fval">all-MiniLM-L6-v2</div></div>
+        <div class="field"><div class="flbl">Dims</div><div class="fval">384-dim vectors</div></div>
+      </div>
+    </div>
+
+    <!-- Node: ChromaDB -->
+    <div class="node t-purple" id="n5" style="left:450px;top:20px;width:92px;">
+      <div class="node-hd"><span class="ico">🗄️</span>ChromaDB</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Metric</div><div class="fval">Cosine (HNSW)</div></div>
+        <div class="field"><div class="flbl">Store</div><div class="fval">data/chroma_db/</div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         QUERY LANE  (middle, y=97–153)
+         Nodes: Student Query → Query Embed → Vector Search → Prompt Builder
+    ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Node: Student Query -->
+    <div class="node t-cyan" id="n6" style="left:14px;top:97px;width:96px;">
+      <div class="node-hd"><span class="ico">👤</span>Student Query</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Input</div><div class="fval">Chat UI / Voice STT</div></div>
+        <div class="field"><div class="flbl">Auth</div><div class="fval">JWT Bearer token</div></div>
+      </div>
+    </div>
+
+    <!-- Node: Query Embedder -->
+    <div class="node t-green" id="n7" style="left:122px;top:97px;width:96px;">
+      <div class="node-hd"><span class="ico">🔢</span>Query Embed</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Same model</div><div class="fval">all-MiniLM-L6-v2</div></div>
+        <div class="field"><div class="flbl">Output</div><div class="fval">384-dim query vec</div></div>
+      </div>
+    </div>
+
+    <!-- Node: Vector Search -->
+    <div class="node t-purple" id="n8" style="left:230px;top:97px;width:96px;">
+      <div class="node-hd"><span class="ico">🔎</span>Vector Search</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Top-K</div><div class="fval">5 closest chunks</div></div>
+        <div class="field"><div class="flbl">Threshold</div><div class="fval">score ≥ 0.20</div></div>
+      </div>
+    </div>
+
+    <!-- Node: Prompt Builder -->
+    <div class="node t-orange" id="n9" style="left:338px;top:97px;width:100px;">
+      <div class="node-hd"><span class="ico">📝</span>Prompt Builder</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Structure</div><div class="fval">System+Context+Q</div></div>
+        <div class="field"><div class="flbl">Guardrail</div><div class="fval">Docs-only rule</div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         IBM GRANITE COLUMN (right, y=25–210)
+    ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Node: IBM Granite -->
+    <div class="node t-ibm" id="ng" style="left:558px;top:25px;width:124px;">
+      <div class="node-hd"><span class="ico">💎</span>IBM Granite LLM</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Model</div><div class="fval">granite-13b-chat-v2</div></div>
+        <div class="field"><div class="flbl">Platform</div><div class="fval">IBM watsonx.ai SDK</div></div>
+        <div class="field"><div class="flbl">Temp / Top-P</div><div class="fval">0.2 &nbsp;/&nbsp; 0.9</div></div>
+        <div class="field"><div class="flbl">Max tokens</div><div class="fval">1024</div></div>
+        <div class="field"><div class="flbl">Fallback</div><div class="fval">Mock RAG (no key)</div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         RESPONSE LANE  (bottom, y=173–225) — right-to-left layout
+         Nodes: SSE Streamer → Source Citations → Markdown → SQLite → Chat UI
+    ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Node: SSE Streamer -->
+    <div class="node t-green" id="n10" style="left:450px;top:174px;width:92px;">
+      <div class="node-hd"><span class="ico">📡</span>SSE Stream</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Events</div><div class="fval">sources/token/done</div></div>
+        <div class="field"><div class="flbl">Protocol</div><div class="fval">Server-Sent Events</div></div>
+      </div>
+    </div>
+
+    <!-- Node: Source Citations -->
+    <div class="node t-orange" id="n11" style="left:338px;top:174px;width:100px;">
+      <div class="node-hd"><span class="ico">📖</span>Citations</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Format</div><div class="fval">{file, page, score}</div></div>
+        <div class="field"><div class="flbl">Display</div><div class="fval">Collapsible chips</div></div>
+      </div>
+    </div>
+
+    <!-- Node: Markdown Renderer -->
+    <div class="node t-blue" id="n12" style="left:230px;top:174px;width:96px;">
+      <div class="node-hd"><span class="ico">✨</span>Markdown</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Library</div><div class="fval">react-markdown</div></div>
+        <div class="field"><div class="flbl">Features</div><div class="fval">Tables / Code / Lists</div></div>
+      </div>
+    </div>
+
+    <!-- Node: SQLite Persistence -->
+    <div class="node t-slate" id="n13" style="left:122px;top:174px;width:96px;">
+      <div class="node-hd"><span class="ico">💾</span>SQLite</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">ORM</div><div class="fval">SQLAlchemy async</div></div>
+        <div class="field"><div class="flbl">Stores</div><div class="fval">sessions+messages</div></div>
+      </div>
+    </div>
+
+    <!-- Node: Chat UI -->
+    <div class="node t-cyan" id="n14" style="left:14px;top:174px;width:96px;">
+      <div class="node-hd"><span class="ico">💬</span>Chat UI</div>
+      <div class="node-bd">
+        <div class="field"><div class="flbl">Framework</div><div class="fval">Next.js 16 + React</div></div>
+        <div class="field"><div class="flbl">Voice</div><div class="fval">STT + TTS</div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         STEP NUMBER BADGES
+    ═══════════════════════════════════════════════════════════════════════════ -->
+    <div class="step-badge" style="left:108px;top:31px;background:#1d4ed8;color:#fff;">1</div>
+    <div class="step-badge" style="left:216px;top:31px;background:#1d4ed8;color:#fff;">2</div>
+    <div class="step-badge" style="left:324px;top:31px;background:#15803d;color:#fff;">3</div>
+    <div class="step-badge" style="left:432px;top:31px;background:#7c3aed;color:#fff;">4</div>
+
+    <div class="step-badge" style="left:108px;top:108px;background:#0e7490;color:#fff;">5</div>
+    <div class="step-badge" style="left:216px;top:108px;background:#15803d;color:#fff;">6</div>
+    <div class="step-badge" style="left:324px;top:108px;background:#7c3aed;color:#fff;">7</div>
+    <div class="step-badge" style="left:432px;top:108px;background:#c2410c;color:#fff;">8</div>
+
+    <div class="step-badge" style="left:432px;top:185px;background:#15803d;color:#fff;">10</div>
+    <div class="step-badge" style="left:324px;top:185px;background:#c2410c;color:#fff;">11</div>
+    <div class="step-badge" style="left:216px;top:185px;background:#1d4ed8;color:#fff;">12</div>
+    <div class="step-badge" style="left:108px;top:185px;background:#475569;color:#fff;">13</div>
+
+  </div><!-- /canvas -->
+
+  <!-- ══ FOOTER ══════════════════════════════════════════════════════════════ -->
+  <div class="footer">
+    <span>📥 Ingestion: PDF Upload → Parse → Chunk (500t/50 overlap) → Embed (all-MiniLM-L6-v2) → ChromaDB Upsert &nbsp;|&nbsp; 🔎 Query: Embed → HNSW Search → Prompt Build → IBM Granite → SSE Stream &nbsp;|&nbsp; 💬 Response: Render → Persist → Chat UI</span>
+    <span>© 2025 Shivam Pathak · AICTE/IBM SkillsBuild &nbsp;|&nbsp; To PDF: Ctrl+P → Save as PDF → Landscape A4</span>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// Draw SVG bezier arrows between nodes after DOM is ready
+window.addEventListener('load', function() {
+  const cv  = document.getElementById('cv');
+  const svg = document.getElementById('svg-arrows');
+  const cr  = cv.getBoundingClientRect();
+
+  function mid(id, side) {
+    const el = document.getElementById(id);
+    const r  = el.getBoundingClientRect();
+    const x  = r.left - cr.left;
+    const y  = r.top  - cr.top;
+    const w  = r.width;
+    const h  = r.height;
+    switch (side) {
+      case 'r': return { x: x + w,      y: y + h * 0.35 };
+      case 'l': return { x: x,           y: y + h * 0.35 };
+      case 'b': return { x: x + w * 0.5, y: y + h       };
+      case 't': return { x: x + w * 0.5, y: y            };
+    }
+  }
+
+  function arrow(from, to, color, marker) {
+    const f = from, t = to;
+    const dx = Math.abs(t.x - f.x) * 0.45;
+    const dy = Math.abs(t.y - f.y) * 0.45;
+    let cx1, cy1, cx2, cy2;
+
+    // horizontal left→right
+    if (Math.abs(f.y - t.y) < 20) {
+      cx1 = f.x + dx; cy1 = f.y;
+      cx2 = t.x - dx; cy2 = t.y;
+    }
+    // vertical top→bottom
+    else if (Math.abs(f.x - t.x) < 20) {
+      cx1 = f.x;       cy1 = f.y + dy;
+      cx2 = t.x;       cy2 = t.y - dy;
+    }
+    // diagonal
+    else {
+      cx1 = f.x + (t.x > f.x ? dx : -dx);
+      cy1 = f.y;
+      cx2 = t.x - (t.x > f.x ? dx : -dx);
+      cy2 = t.y;
+    }
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M${f.x},${f.y} C${cx1},${cy1} ${cx2},${cy2} ${t.x},${t.y}`);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '1.4');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('marker-end', `url(#${marker})`);
+    svg.appendChild(path);
+  }
+
+  // ── Ingestion lane arrows (left→right)
+  arrow(mid('n1','r'), mid('n2','l'), '#1d4ed8', 'arr-blue');
+  arrow(mid('n2','r'), mid('n3','l'), '#1d4ed8', 'arr-blue');
+  arrow(mid('n3','r'), mid('n4','l'), '#15803d', 'arr-green');
+  arrow(mid('n4','r'), mid('n5','l'), '#7c3aed', 'arr-purple');
+
+  // ── ChromaDB ↓ to Vector Search
+  arrow(mid('n5','b'), mid('n8','t'), '#7c3aed', 'arr-purple');
+
+  // ── Query lane arrows (left→right)
+  arrow(mid('n6','r'), mid('n7','l'), '#0e7490', 'arr-cyan');
+  arrow(mid('n7','r'), mid('n8','l'), '#15803d', 'arr-green');
+  arrow(mid('n8','r'), mid('n9','l'), '#c2410c', 'arr-orange');
+
+  // ── Prompt Builder → IBM Granite
+  arrow(mid('n9','r'), mid('ng','l'), '#0f62fe', 'arr-ibm');
+
+  // ── IBM Granite → SSE Streamer
+  arrow(mid('ng','b'), mid('n10','t'), '#15803d', 'arr-green');
+
+  // ── Response lane arrows (right→left)
+  arrow(mid('n10','l'), mid('n11','r'), '#c2410c', 'arr-orange');
+  arrow(mid('n11','l'), mid('n12','r'), '#1d4ed8', 'arr-blue');
+  arrow(mid('n12','l'), mid('n13','r'), '#475569', 'arr-slate');
+  arrow(mid('n13','l'), mid('n14','r'), '#0e7490', 'arr-cyan');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+# ==============================================================
+#  Root .gitignore — College Admission Agent Project
+# ==============================================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ---- Virtual environments ----
+venv/
+env/
+.venv/
+malaria_env/
+
+# ---- Environment / Secrets ----
+.env
+.env.local
+.env.production
+*.env
+
+# ---- Databases ----
+*.db
+*.sqlite
+*.sqlite3
+
+# ---- ChromaDB & vector store data ----
+college-admission-agent/backend/data/
+
+# ---- Node / Next.js ----
+node_modules/
+college-admission-agent/frontend/.next/
+college-admission-agent/frontend/node_modules/
+college-admission-agent/frontend/tsconfig.tsbuildinfo
+
+# ---- macOS ----
+.DS_Store
+.CFUserTextEncoding
+~$*
+
+# ---- IDE / Tools ----
+.vscode/
+.idea/
+.antigravity-ide/
+.bob/
+.bobide/
+.bobide-shared/
+.azure/
+.claude/
+.claude.json
+.codex/
+.gemini/
+.config/
+.cache/
+.local/
+.npm/
+.gradle/
+.idlerc/
+.jarvis_profiles/
+.kivy/
+.matplotlib/
+.keras/
+.officecli/
+.ollama/
+.redhat/
+.lesshst
+.python_history
+.zsh_history
+.zsh_sessions/
+.zshrc
+.zprofile
+.zprofile.pysave
+.gitconfig
+
+# ---- Logs ----
+*.log
+logs/
+
+# ---- Other build artefacts ----
+*.pycache
+htmlcov/
+.pytest_cache/
+.coverage
+.mypy_cache/
+*.swp
+*.swo
+
+# ---- Large binary / personal files (not part of project) ----
+jdk-*.dmg
+*.pcapng
