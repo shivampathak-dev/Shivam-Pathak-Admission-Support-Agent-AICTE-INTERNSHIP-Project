@@ -4,6 +4,11 @@
 =============================================================================
 AICTE / IBM SkillsBuild Internship Project
 Single-File Streamlit Application for Streamlit Community Cloud Deployment
+Includes:
+  - Interactive Login & Authentication Screen (Admin & Student roles)
+  - Audio Playback (Voice Reader / Text-to-Speech) for AI Responses
+  - RAG Vector Store & Context Ingestion
+  - IBM Granite Foundation Model Integration + Smart Local RAG Fallback
 =============================================================================
 """
 
@@ -14,6 +19,7 @@ import time
 from typing import List, Dict, Tuple, Optional
 
 import streamlit as st
+import streamlit.components.v1 as components
 import numpy as np
 
 # ── Lightweight Document & Retrieval Dependencies ────────────────────────────
@@ -36,6 +42,13 @@ try:
 except ImportError:
     import urllib.request
     HAS_HTTPX = False
+
+try:
+    from gtts import gTTS
+    import io
+    HAS_GTTS = True
+except ImportError:
+    HAS_GTTS = False
 
 
 # ── Page Configuration & IBM Carbon / Neon Aesthetic CSS ─────────────────────
@@ -62,7 +75,7 @@ st.markdown(
                     linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));
         border: 1px solid rgba(148, 163, 184, 0.15);
         border-radius: 16px;
-        padding: 24px;
+        padding: 22px 26px;
         margin-bottom: 20px;
         box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
     }
@@ -101,15 +114,16 @@ st.markdown(
         border-right: 1px solid rgba(51, 65, 85, 0.5);
     }
     
-    /* Source citation box */
-    .citation-box {
-        background: rgba(15, 23, 42, 0.6);
-        border-left: 3px solid #3b82f6;
-        border-radius: 6px;
-        padding: 8px 12px;
+    /* Login Card Styling */
+    .login-container {
+        background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 60%),
+                    linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.8));
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 20px;
+        padding: 32px 36px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(16px);
         margin-top: 10px;
-        font-size: 12px;
-        color: #94a3b8;
     }
     </style>
     """,
@@ -350,7 +364,6 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes, filename: str) -> List[Dict]:
             if not text:
                 continue
 
-            # Word-level chunking
             words = text.split()
             chunk_size = 350
             overlap = 35
@@ -494,7 +507,96 @@ def synthesize_local_rag_answer(query: str, chunks: List[Dict]) -> str:
     )
 
 
+# ── Audio Playback (Voice Reader / Web Speech API) Component ──────────────────
+def render_audio_playback_button(text: str, msg_id: str):
+    """
+    Renders an in-browser audio player button using HTML5 Web Speech API.
+    Zero Python dependencies, zero latency, speaks natural voice directly in browser.
+    """
+    # Clean text of markdown characters, URLs, and code blocks for smooth speech
+    clean_text = re.sub(r'[*#_`>-]', ' ', text)
+    clean_text = re.sub(r'https?://\S+', '', clean_text)
+    clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+    clean_text_json = json.dumps(clean_text[:1400])
+
+    html_code = f"""
+    <div style="margin: 8px 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+        <button id="tts_btn_{msg_id}" onclick="toggleTTS_{msg_id}()" style="
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.2));
+            border: 1px solid rgba(96, 165, 250, 0.35);
+            color: #93c5fd;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        " onmouseover="this.style.background='rgba(59, 130, 246, 0.3)'; this.style.borderColor='#60a5fa';" 
+           onmouseout="this.style.background='linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.2))'; this.style.borderColor='rgba(96, 165, 250, 0.35)';">
+            <span id="tts_icon_{msg_id}">🔊</span>
+            <span id="tts_label_{msg_id}">Listen to Answer</span>
+        </button>
+    </div>
+    <script>
+    var isPlaying_{msg_id} = false;
+    function toggleTTS_{msg_id}() {{
+        if (!('speechSynthesis' in window)) {{
+            alert('Your browser does not support audio speech synthesis.');
+            return;
+        }}
+        var btn = document.getElementById('tts_btn_{msg_id}');
+        var icon = document.getElementById('tts_icon_{msg_id}');
+        var label = document.getElementById('tts_label_{msg_id}');
+
+        if (isPlaying_{msg_id}) {{
+            window.speechSynthesis.cancel();
+            isPlaying_{msg_id} = false;
+            icon.innerText = '🔊';
+            label.innerText = 'Listen to Answer';
+            btn.style.borderColor = 'rgba(96, 165, 250, 0.35)';
+        }} else {{
+            window.speechSynthesis.cancel();
+            var text = {clean_text_json};
+            var utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            
+            utterance.onend = function() {{
+                isPlaying_{msg_id} = false;
+                icon.innerText = '🔊';
+                label.innerText = 'Listen to Answer';
+                btn.style.borderColor = 'rgba(96, 165, 250, 0.35)';
+            }};
+            utterance.onerror = function() {{
+                isPlaying_{msg_id} = false;
+                icon.innerText = '🔊';
+                label.innerText = 'Listen to Answer';
+                btn.style.borderColor = 'rgba(96, 165, 250, 0.35)';
+            }};
+
+            isPlaying_{msg_id} = true;
+            icon.innerText = '⏹️';
+            label.innerText = 'Stop Audio';
+            btn.style.borderColor = '#ef4444';
+            window.speechSynthesis.speak(utterance);
+        }}
+    }}
+    </script>
+    """
+    components.html(html_code, height=44)
+
+
 # ── Session State Management ──────────────────────────────────────────────────
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if "user_info" not in st.session_state:
+    st.session_state.user_info = None
+
 if "knowledge_base" not in st.session_state:
     st.session_state.knowledge_base = list(DEFAULT_BROCHURE_CHUNKS)
 
@@ -505,15 +607,156 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 
+# ── Interactive Login Screen Component ────────────────────────────────────────
+def render_login_screen():
+    """Renders the authentication portal when user is not logged in."""
+    st.markdown(
+        """
+        <div style="max-width: 600px; margin: 40px auto 10px auto; text-align: center;">
+            <div style="display:inline-flex; align-items:center; justify-content:center; width:68px; height:68px; border-radius:20px; background:linear-gradient(135deg, #3b82f6, #6366f1); margin-bottom:16px; box-shadow:0 10px 25px rgba(59,130,246,0.35); border:1px solid rgba(255,255,255,0.15);">
+                <span style="font-size:34px;">🎓</span>
+            </div>
+            <h1 style="font-size: 30px; font-weight: 800; color: #ffffff; margin-bottom: 6px; letter-spacing: -0.5px;">
+                College Admission Agent
+            </h1>
+            <p style="font-size: 14px; color: #94a3b8; margin-bottom: 24px;">
+                AI-Powered Admission Counsellor · Powered by IBM Granite LLM & ChromaDB RAG
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    col_l, col_center, col_r = st.columns([1, 2, 1])
+
+    with col_center:
+        st.markdown('<div class="login-container">', unsafe_allow_html=True)
+        tab_student, tab_admin = st.tabs(["👤 Student Portal", "🛡️ Admin Sign In"])
+
+        # ── 1. Student Login Tab ──
+        with tab_student:
+            st.markdown("##### Student Sign In")
+            st.caption("Access personalized college advisory, fee calculations, and cutoffs.")
+            
+            with st.form("student_login_form"):
+                stu_email = st.text_input("Student Email", value="student@college.edu", placeholder="you@example.com")
+                stu_pass = st.text_input("Password", value="Student1234", type="password")
+                stu_submit = st.form_submit_button("🚀 Sign In as Student", use_container_width=True)
+
+                if stu_submit:
+                    if stu_email.strip() and stu_pass.strip():
+                        st.session_state.authenticated = True
+                        st.session_state.user_info = {
+                            "email": stu_email.strip(),
+                            "role": "student",
+                            "name": stu_email.split("@")[0].capitalize(),
+                        }
+                        st.success("Signed in successfully!")
+                        time.sleep(0.5)
+                        st.rerun()
+                    else:
+                        st.error("Please enter email and password.")
+
+            st.markdown("<div style='text-align:center; margin:10px 0;'>or</div>", unsafe_allow_html=True)
+            if st.button("⚡ 1-Click Instant Student Demo", key="quick_student", use_container_width=True):
+                st.session_state.authenticated = True
+                st.session_state.user_info = {
+                    "email": "student@college.edu",
+                    "role": "student",
+                    "name": "Shivam (Student)",
+                }
+                st.rerun()
+
+        # ── 2. Admin Login Tab ──
+        with tab_admin:
+            st.markdown("##### Administrator Portal")
+            st.caption("Upload college brochures, manage vector index, and inspect system telemetry.")
+
+            with st.form("admin_login_form"):
+                adm_email = st.text_input("Admin Email", value="admin@college.edu", placeholder="admin@college.edu")
+                adm_pass = st.text_input("Admin Password", value="Admin1234", type="password")
+                adm_submit = st.form_submit_button("🛡️ Sign In as Admin", use_container_width=True)
+
+                if adm_submit:
+                    if adm_email.strip() == "admin@college.edu" and adm_pass.strip() == "Admin1234":
+                        st.session_state.authenticated = True
+                        st.session_state.user_info = {
+                            "email": "admin@college.edu",
+                            "role": "admin",
+                            "name": "Admin User",
+                        }
+                        st.success("Admin authenticated successfully!")
+                        time.sleep(0.5)
+                        st.rerun()
+                    else:
+                        st.error("Invalid Admin credentials. Use admin@college.edu / Admin1234")
+
+            st.markdown("<div style='text-align:center; margin:10px 0;'>or</div>", unsafe_allow_html=True)
+            if st.button("⚡ 1-Click Instant Admin Demo", key="quick_admin", use_container_width=True):
+                st.session_state.authenticated = True
+                st.session_state.user_info = {
+                    "email": "admin@college.edu",
+                    "role": "admin",
+                    "name": "Admin User",
+                }
+                st.rerun()
+
+        # Demo Credentials Hint Box
+        st.markdown(
+            """
+            <div style="margin-top:24px; padding:12px 14px; background:rgba(15,23,42,0.6); border-radius:12px; border:1px solid rgba(51,65,85,0.7); font-size:12px; color:#94a3b8;">
+                <div style="font-weight:600; color:#cbd5e1; margin-bottom:4px;">🔑 Demo Credentials:</div>
+                <div>• <b>Admin:</b> <code>admin@college.edu</code> / <code>Admin1234</code></div>
+                <div>• <b>Student:</b> <code>student@college.edu</code> / <code>Student1234</code></div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ── Authentication Gate Check ─────────────────────────────────────────────────
+if not st.session_state.get("authenticated", False):
+    render_login_screen()
+    st.stop()
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# 🚀 AUTHENTICATED APPLICATION INTERFACE
+# ═════════════════════════════════════════════════════════════════════════════
+
+user = st.session_state.user_info or {"name": "User", "role": "student", "email": "user@college.edu"}
+is_admin = user.get("role") == "admin"
+
+
 # ── Sidebar: Configuration, Knowledge Base & Quick Prompts ────────────────────
 with st.sidebar:
-    st.markdown("### 🎓 **Admission Agent**")
-    st.markdown("<p style='font-size:12px; color:#94a3b8;'>IBM Granite AI · AICTE Internship</p>", unsafe_allow_html=True)
+    # User Profile Pill & Logout
+    st.markdown(
+        f"""
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(30,41,59,0.7); border:1px solid rgba(148,163,184,0.2); border-radius:12px; padding:10px 14px; margin-bottom:14px;">
+            <div>
+                <div style="font-weight:700; font-size:13px; color:#ffffff;">👤 {user.get('name')}</div>
+                <div style="font-size:11px; color:#94a3b8;">{user.get('email')}</div>
+            </div>
+            <span class="badge-pill {'badge-pill-green' if is_admin else 'badge-pill-purple'}" style="margin:0;">
+                {user.get('role').upper()}
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    
+    if st.button("🚪 Sign Out", use_container_width=True):
+        st.session_state.authenticated = False
+        st.session_state.user_info = None
+        st.session_state.messages = []
+        st.rerun()
+
     st.markdown("---")
 
     # 1. IBM watsonx.ai Settings
     with st.expander("🤖 **IBM watsonx.ai Credentials**", expanded=False):
-        # Look for secrets first
         default_api_key = st.secrets.get("IBM_WATSONX_API_KEY", os.getenv("IBM_WATSONX_API_KEY", ""))
         default_project_id = st.secrets.get("IBM_WATSONX_PROJECT_ID", os.getenv("IBM_WATSONX_PROJECT_ID", ""))
         
@@ -535,23 +778,26 @@ with st.sidebar:
     with st.expander("📚 **Knowledge Base & Documents**", expanded=True):
         st.write(f"**Total Indexed Chunks:** `{len(st.session_state.knowledge_base)}`")
         
-        uploaded_pdf = st.file_uploader("Upload College Brochure (PDF)", type=["pdf"], key="pdf_uploader")
-        if uploaded_pdf is not None:
-            if st.button("📥 Index Uploaded PDF", use_container_width=True):
-                with st.spinner("Extracting & Indexing PDF..."):
-                    new_chunks = extract_text_from_pdf_bytes(uploaded_pdf.getvalue(), uploaded_pdf.name)
-                    if new_chunks:
-                        st.session_state.knowledge_base.extend(new_chunks)
-                        st.session_state.retriever = RAGRetriever(st.session_state.knowledge_base)
-                        st.success(f"Indexed {len(new_chunks)} chunks from {uploaded_pdf.name}!")
-                        time.sleep(1)
-                        st.rerun()
+        if is_admin:
+            uploaded_pdf = st.file_uploader("Upload College Brochure (PDF)", type=["pdf"], key="pdf_uploader")
+            if uploaded_pdf is not None:
+                if st.button("📥 Index Uploaded PDF", use_container_width=True):
+                    with st.spinner("Extracting & Indexing PDF..."):
+                        new_chunks = extract_text_from_pdf_bytes(uploaded_pdf.getvalue(), uploaded_pdf.name)
+                        if new_chunks:
+                            st.session_state.knowledge_base.extend(new_chunks)
+                            st.session_state.retriever = RAGRetriever(st.session_state.knowledge_base)
+                            st.success(f"Indexed {len(new_chunks)} chunks from {uploaded_pdf.name}!")
+                            time.sleep(1)
+                            st.rerun()
 
-        if st.button("🔄 Reset to Default Brochure", use_container_width=True):
-            st.session_state.knowledge_base = list(DEFAULT_BROCHURE_CHUNKS)
-            st.session_state.retriever = RAGRetriever(st.session_state.knowledge_base)
-            st.success("Reset to official 2025-26 brochure.")
-            st.rerun()
+            if st.button("🔄 Reset to Default Brochure", use_container_width=True):
+                st.session_state.knowledge_base = list(DEFAULT_BROCHURE_CHUNKS)
+                st.session_state.retriever = RAGRetriever(st.session_state.knowledge_base)
+                st.success("Reset to official 2025-26 brochure.")
+                st.rerun()
+        else:
+            st.caption("Active Knowledge: Official 2025-26 College Admission Brochure (5 Pages Indexed).")
 
     # 3. Quick Questions
     st.markdown("#### 💡 **Quick Prompts**")
@@ -615,6 +861,7 @@ st.markdown(
             <div>
                 {mode_badge}
                 <span class="badge-pill">🛡️ Strict Guardrails</span>
+                <span class="badge-pill">🔊 Audio Playback</span>
                 <span class="badge-pill">📄 5-Page Verified Prospectus</span>
             </div>
         </div>
@@ -624,35 +871,41 @@ st.markdown(
 )
 
 # Render Chat History
-for msg in st.session_state.messages:
+for i, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"], avatar="👤" if msg["role"] == "user" else "🎓"):
         st.markdown(msg["content"])
-        if msg.get("sources"):
-            with st.expander(f"📚 {len(msg['sources'])} Source Citation(s)"):
-                for s in msg["sources"]:
-                    st.markdown(
-                        f"- **{s['source']}** · Page {s['page']} *(Confidence: {s['score']:.2f})*\n"
-                        f"  > *\"{s['content'][:150]}...\"*"
-                    )
+        
+        # Audio Playback & Source Citations for assistant messages
+        if msg["role"] == "assistant":
+            col_audio, col_empty = st.columns([1, 4])
+            with col_audio:
+                render_audio_playback_button(msg["content"], f"hist_{i}")
+
+            if msg.get("sources"):
+                with st.expander(f"📚 {len(msg['sources'])} Source Citation(s)"):
+                    for s in msg["sources"]:
+                        st.markdown(
+                            f"- **{s['source']}** · Page {s['page']} *(Confidence: {s['score']:.2f})*\n"
+                            f"  > *\"{s['content'][:150]}...\"*"
+                        )
 
 # Initial Welcome message if empty
 if not st.session_state.messages:
     with st.chat_message("assistant", avatar="🎓"):
-        st.markdown(
-            """
-            Hello! 👋 I am your **AI College Admission Counsellor**, grounded in official college prospectuses and brochures.
-            
-            Feel free to ask me anything about:
-            - **Application & Registration Deadlines**
-            - **B.Tech Tuition & Examination Fees** (CSE, AI & DS, ECE, ME, Civil)
-            - **Eligibility Criteria & JEE Main Cutoffs**
-            - **Hostel (AC / Non-AC) & Mess Charges**
-            - **Merit & Need-Based Scholarships**
-            - **Admissions Office Helpline & Location**
-            
-            *Click a suggestion in the left sidebar or type your query below to begin!*
-            """
+        welcome_intro = (
+            f"Hello {user.get('name')}! 👋 I am your **AI College Admission Counsellor**, "
+            "strictly grounded in official college prospectuses and brochures.\n\n"
+            "Feel free to ask me anything about:\n"
+            "- **Application & Registration Deadlines**\n"
+            "- **B.Tech Tuition & Examination Fees** (CSE, AI & DS, ECE, ME, Civil)\n"
+            "- **Eligibility Criteria & JEE Main Cutoffs**\n"
+            "- **Hostel (AC / Non-AC) & Mess Charges**\n"
+            "- **Merit & Need-Based Scholarships**\n"
+            "- **Admissions Office Helpline & Location**\n\n"
+            "*Click a suggestion in the left sidebar or type your query below to begin! Each answer includes audio playback controls.*"
         )
+        st.markdown(welcome_intro)
+        render_audio_playback_button(welcome_intro, "welcome_audio")
 
 # Determine Query Input (from chat input or quick prompt button)
 user_query = st.chat_input("Ask a question about admission, fees, deadlines, or hostels...")
@@ -677,7 +930,6 @@ if user_query:
         # Check if live IBM watsonx.ai credentials are provided
         if api_key and project_id:
             with st.spinner("Reasoning with IBM Granite 3-8B..."):
-                # Build context prompt
                 context_str = "\n\n".join(
                     f"[Source: {c['source']}, Page {c['page']}]\n{c['content']}"
                     for c in retrieved_chunks
@@ -720,6 +972,9 @@ if user_query:
             answer_placeholder.markdown(displayed_text + "▌")
             time.sleep(0.012)
         answer_placeholder.markdown(answer_text)
+
+        # Render Audio Playback Button
+        render_audio_playback_button(answer_text, f"live_{int(time.time())}")
 
         # Render source citations
         if retrieved_chunks and retrieved_chunks[0].get("score", 0) >= 0.08:
