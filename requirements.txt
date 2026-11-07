@@ -1,0 +1,6 @@
+# Requirements for Streamlit Community Cloud Deployment
+streamlit>=1.35.0
+pymupdf>=1.24.0
+scikit-learn>=1.4.0
+numpy>=1.26.0
+httpx>=0.27.0

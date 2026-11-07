@@ -57,6 +57,9 @@ node_modules/
 *.sqlite
 *.sqlite3
 *.pptx
+*.mov
+*.mp4
+*.avi
 Shivam_CollegeAdmissionAgent_Presentation.pptx
 
 # Build artifacts
